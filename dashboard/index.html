@@ -155,7 +155,23 @@
     <div class="panel">
       <div class="center-content">
         <!-- Interactive Leaflet Map -->
-        <div id="map-container"></div>
+        <div id="map-container">
+          <!-- Floating Glassmorphic Map Legend -->
+          <div class="map-legend">
+            <div class="legend-item">
+              <div class="legend-swatch normal"></div>
+              <span>Normal (Safe)</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-swatch warning"></div>
+              <span>Warning (Advisory)</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-swatch critical"></div>
+              <span>Critical (Evacuate)</span>
+            </div>
+          </div>
+        </div>
 
         <!-- Telemetry Graphs -->
         <div class="telemetry-charts-panel">

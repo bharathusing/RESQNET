@@ -1,6 +1,6 @@
 /**
  * RESQNET District Control Room Dashboard Logic
- * Real-time GIS Mapping, WebSocket Streaming, Chart.js Hydrographs, and Interactive Simulation Studio
+ * Multi-layer Leaflet GIS Mapping, Glowing divIcon Markers, Chart.js Hydrographs, and Simulation Studio
  */
 
 const API_BASE = "http://localhost:8000";
@@ -15,31 +15,79 @@ let websocket = null;
 let autoSequenceInterval = null;
 let autoSequenceStep = 0;
 
-// Initial Node Database Fallback
+// Initial Sensor Node Database
 let nodesData = [
-  { id: "RESQ-NODE-01", name: "Riverside Basin Station", type: "RIVER_ONLY", lat: 13.0850, lon: 80.2750, location: "Upper Stream - Sector 1", risk: 0, water: 45.2, rain: 2.1, soil: 35.0, tilt: 0.5, vib: 0.05 },
-  { id: "RESQ-NODE-02", name: "Hillside Slope Monitor", type: "SLOPE_ONLY", lat: 13.0920, lon: 80.2680, location: "North Ridge Escarpment", risk: 0, water: 0.0, rain: 1.8, soil: 42.0, tilt: 1.2, vib: 0.08 },
-  { id: "RESQ-NODE-03", name: "Bridge Valley Checkpoint", type: "DUAL", lat: 13.0780, lon: 80.2820, location: "Main Causeway Bridge", risk: 0, water: 60.5, rain: 2.5, soil: 50.0, tilt: 0.4, vib: 0.04 },
-  { id: "RESQ-NODE-04", name: "High Ridge LoRa Gateway", type: "REPEATER", lat: 13.0990, lon: 80.2600, location: "Ridge Summit Tower", risk: 0, water: 0.0, rain: 0.5, soil: 20.0, tilt: 0.2, vib: 0.02 }
+  { id: "RESQ-NODE-01", name: "Riverside Basin Station", type: "RIVER_ONLY", lat: 13.0850, lon: 80.2750, location: "Upper Adyar Stream - Zone 1", risk: 0, water: 45.2, rain: 2.1, soil: 35.0, tilt: 0.5, vib: 0.05, batt: 98 },
+  { id: "RESQ-NODE-02", name: "Hillside Slope Monitor", type: "SLOPE_ONLY", lat: 13.0920, lon: 80.2680, location: "North Ridge Escarpment", risk: 0, water: 0.0, rain: 1.8, soil: 42.0, tilt: 1.2, vib: 0.08, batt: 95 },
+  { id: "RESQ-NODE-03", name: "Bridge Valley Checkpoint", type: "DUAL", lat: 13.0780, lon: 80.2820, location: "Main Causeway Bridge", risk: 0, water: 60.5, rain: 2.5, soil: 50.0, tilt: 0.4, vib: 0.04, batt: 92 },
+  { id: "RESQ-NODE-04", name: "High Ridge LoRa Gateway", type: "REPEATER", lat: 13.0990, lon: 80.2600, location: "Ridge Summit Tower", risk: 0, water: 0.0, rain: 0.5, soil: 20.0, tilt: 0.2, vib: 0.02, batt: 100 }
 ];
 
-// Initialize Map
+// 1. Initialize Map with 3 Free Zero-API-Key Base Layers
 function initMap() {
-  map = L.map('map-container').setView([13.0860, 80.2720], 14);
+  // Base Layer 1: Dark Mode (Esri World Dark Gray Canvas - Default)
+  const esriDark = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+    maxZoom: 16
+  });
 
-  // Free OpenStreetMap (No API Key Required)
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  // Base Layer 2: Street Map (OpenStreetMap Standard)
+  const osmStreet = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19
-  }).addTo(map);
+  });
 
+  // Base Layer 3: Satellite View (Esri World Imagery)
+  const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+    maxZoom: 18
+  });
+
+  // Initialize map instance
+  map = L.map('map-container', {
+    center: [13.0860, 80.2720],
+    zoom: 14,
+    layers: [esriDark] // Default base layer
+  });
+
+  // Layer Switcher in top-right corner
+  const baseLayers = {
+    "🌙 Dark Mode": esriDark,
+    "🗺️ Street Map": osmStreet,
+    "🛰️ Satellite View": esriSatellite
+  };
+
+  L.control.layers(baseLayers, null, { position: 'topright' }).addTo(map);
+
+  // Render glowing markers
   updateMapMarkers();
 }
 
-function getRiskColor(riskLevel) {
-  if (riskLevel === 1) return "#f59e0b"; // Warning Yellow
-  if (riskLevel >= 2) return "#ef4444"; // Critical Red
-  return "#10b981";                    // Normal Green
+// 2. Helper: Custom Glowing L.divIcon Marker Generator
+function createGlowingIcon(riskLevel) {
+  let statusClass = "status-normal";
+  if (riskLevel === 1) statusClass = "status-warning";
+  if (riskLevel >= 2) statusClass = "status-critical";
+
+  return L.divIcon({
+    className: 'custom-div-icon',
+    html: `
+      <div class="resq-marker ${statusClass}">
+        <div class="marker-pulse"></div>
+        <div class="marker-core"></div>
+      </div>
+    `,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -14]
+  });
+}
+
+function getRiskName(r) {
+  if (r === 1) return "WARNING";
+  if (r === 2) return "CRITICAL FLOOD";
+  if (r === 3) return "CRITICAL LANDSLIDE";
+  return "NORMAL";
 }
 
 function getRiskBadgeHTML(riskLevel, riskName) {
@@ -49,63 +97,63 @@ function getRiskBadgeHTML(riskLevel, riskName) {
   return `<span class="risk-tag normal">✓ NORMAL</span>`;
 }
 
+function formatNodePopupHTML(node) {
+  const riskColor = (node.risk >= 2) ? "#ef4444" : (node.risk === 1 ? "#f59e0b" : "#10b981");
+  return `
+    <div style="font-size:0.85rem; min-width:210px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1f2d4a; padding-bottom:4px; margin-bottom:6px;">
+        <strong style="color:#38bdf8;">${node.name}</strong>
+        <span style="font-size:0.7rem; color:#94a3b8;">${node.id}</span>
+      </div>
+      <div style="color:#94a3b8; font-size:0.72rem; margin-bottom:8px;">📍 ${node.location}</div>
+      <div style="background:#0b0f19; padding:6px 8px; border-radius:6px; margin-bottom:8px; border:1px solid #1f2d4a;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+          <span>Risk Status:</span>
+          <strong style="color:${riskColor};">${getRiskName(node.risk)}</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+          <span>💧 Water Level:</span>
+          <strong>${node.water.toFixed(1)} cm</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+          <span>🌧️ Rain Intensity:</span>
+          <strong>${node.rain.toFixed(1)} mm/hr</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+          <span>🌱 Soil Moisture:</span>
+          <strong>${node.soil.toFixed(1)} %</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <span>📐 Slope Tilt:</span>
+          <strong>${node.tilt.toFixed(1)}°</strong>
+        </div>
+      </div>
+      <div style="font-size:0.7rem; color:#10b981; text-align:right;">
+        🔋 Battery: ${node.batt || 95}% | 📶 LoRa Mesh Sync
+      </div>
+    </div>
+  `;
+}
+
 function updateMapMarkers() {
   nodesData.forEach(node => {
-    const color = getRiskColor(node.risk);
-    const radius = node.risk >= 2 ? 14 : 9;
+    const icon = createGlowingIcon(node.risk);
+    const popupContent = formatNodePopupHTML(node);
 
     if (!nodeMarkers[node.id]) {
-      const circleMarker = L.circleMarker([node.lat, node.lon], {
-        radius: radius,
-        fillColor: color,
-        color: '#ffffff',
-        weight: 2,
-        opacity: 0.9,
-        fillOpacity: 0.8
-      }).addTo(map);
+      const marker = L.marker([node.lat, node.lon], { icon: icon }).addTo(map);
+      marker.bindPopup(popupContent);
 
-      circleMarker.bindPopup(`
-        <div style="font-size:0.85rem;">
-          <strong>${node.name} (${node.id})</strong><br>
-          <span style="color:#94a3b8;">${node.location}</span><br><br>
-          <b>Risk Status:</b> <span style="color:${color}; font-weight:bold;">${getRiskName(node.risk)}</span><br>
-          <b>Water Level:</b> ${node.water.toFixed(1)} cm<br>
-          <b>Rainfall Rate:</b> ${node.rain.toFixed(1)} mm/hr<br>
-          <b>Soil Moisture:</b> ${node.soil.toFixed(1)} %<br>
-          <b>Slope Tilt:</b> ${node.tilt.toFixed(1)}°
-        </div>
-      `);
-
-      circleMarker.on('click', () => {
+      marker.on('click', () => {
         selectNode(node.id);
       });
 
-      nodeMarkers[node.id] = circleMarker;
+      nodeMarkers[node.id] = marker;
     } else {
-      nodeMarkers[node.id].setStyle({
-        fillColor: color,
-        radius: radius
-      });
-      nodeMarkers[node.id].setPopupContent(`
-        <div style="font-size:0.85rem;">
-          <strong>${node.name} (${node.id})</strong><br>
-          <span style="color:#94a3b8;">${node.location}</span><br><br>
-          <b>Risk Status:</b> <span style="color:${color}; font-weight:bold;">${getRiskName(node.risk)}</span><br>
-          <b>Water Level:</b> ${node.water.toFixed(1)} cm<br>
-          <b>Rainfall Rate:</b> ${node.rain.toFixed(1)} mm/hr<br>
-          <b>Soil Moisture:</b> ${node.soil.toFixed(1)} %<br>
-          <b>Slope Tilt:</b> ${node.tilt.toFixed(1)}°
-        </div>
-      `);
+      nodeMarkers[node.id].setIcon(icon);
+      nodeMarkers[node.id].setPopupContent(popupContent);
     }
   });
-}
-
-function getRiskName(r) {
-  if (r === 1) return "WARNING";
-  if (r === 2) return "CRITICAL FLOOD";
-  if (r === 3) return "CRITICAL LANDSLIDE";
-  return "NORMAL";
 }
 
 function renderNodeList() {
@@ -153,7 +201,7 @@ function selectNode(nodeId) {
   
   const targetNode = nodesData.find(n => n.id === nodeId);
   if (targetNode && map) {
-    map.panTo([targetNode.lat, targetNode.lon]);
+    map.setView([targetNode.lat, targetNode.lon], 14, { animate: true });
     if (nodeMarkers[nodeId]) {
       nodeMarkers[nodeId].openPopup();
     }
@@ -166,7 +214,7 @@ function selectNode(nodeId) {
   }
 }
 
-// Chart.js Initialization
+// 3. Chart.js Initialization
 function initCharts() {
   const ctxWater = document.getElementById('waterChart').getContext('2d');
   const ctxSlide = document.getElementById('landslideChart').getContext('2d');
@@ -200,8 +248,8 @@ function initCharts() {
       responsive: true,
       maintainAspectRatio: false,
       scales: {
-        x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1e293b' } },
-        y: { ticks: { color: '#06b6d4' }, grid: { color: '#1e293b' }, title: { display: true, text: 'Water Level (cm)', color: '#06b6d4' } },
+        x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1f2d4a' } },
+        y: { ticks: { color: '#06b6d4' }, grid: { color: '#1f2d4a' }, title: { display: true, text: 'Water Level (cm)', color: '#06b6d4' } },
         y1: { position: 'right', ticks: { color: '#3b82f6' }, grid: { drawOnChartArea: false }, title: { display: true, text: 'Rain (mm/h)', color: '#3b82f6' } }
       },
       plugins: { legend: { labels: { color: '#f8fafc', font: { size: 11 } } } }
@@ -232,8 +280,8 @@ function initCharts() {
       responsive: true,
       maintainAspectRatio: false,
       scales: {
-        x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1e293b' } },
-        y: { ticks: { color: '#10b981' }, grid: { color: '#1e293b' }, title: { display: true, text: 'Soil Saturation (%)', color: '#10b981' } },
+        x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1f2d4a' } },
+        y: { ticks: { color: '#10b981' }, grid: { color: '#1f2d4a' }, title: { display: true, text: 'Soil Saturation (%)', color: '#10b981' } },
         y1: { position: 'right', ticks: { color: '#f59e0b' }, grid: { drawOnChartArea: false }, title: { display: true, text: 'Tilt Angle (°)', color: '#f59e0b' } }
       },
       plugins: { legend: { labels: { color: '#f8fafc', font: { size: 11 } } } }
@@ -265,7 +313,7 @@ function updateCharts(waterVal, rainVal, soilVal, tiltVal) {
   }
 }
 
-// Incident Management
+// 4. Incident Management
 function addIncidentCard(hazard, severity, location, details) {
   const container = document.getElementById('incident-feed-container');
   const card = document.createElement('div');
@@ -282,7 +330,7 @@ function addIncidentCard(hazard, severity, location, details) {
   container.insertBefore(card, container.firstChild);
 }
 
-// WebSocket Live Streaming
+// 5. WebSocket Live Streaming
 function connectWebSocket() {
   try {
     websocket = new WebSocket(WS_URL);
@@ -334,9 +382,7 @@ function handleIncomingTelemetry(msg) {
   }
 }
 
-// ==========================================
-// SIMULATION STUDIO & INJECTION FUNCTIONS
-// ==========================================
+// 6. Simulation Studio Controls
 function toggleSimModal() {
   const modal = document.getElementById('simulation-modal');
   modal.classList.toggle('hidden');
@@ -387,7 +433,6 @@ function injectCustomSliderValues() {
   const tilt = parseFloat(document.getElementById('slider-tilt').value);
   const vib = parseFloat(document.getElementById('slider-vib').value);
 
-  // Evaluate risk level on the fly
   let risk = 0;
   let riskName = "NORMAL";
   let msg = "NORMAL: Custom values within baseline.";
