@@ -30,6 +30,17 @@
       <button class="btn-sim-toggle" onclick="toggleSimModal()">
         <span>🎮</span> Simulation Studio & Disaster Injector
       </button>
+      
+      <!-- In-App Notification Bell & Sound Controls -->
+      <button class="btn-notification-bell" id="btn-notification-bell" onclick="toggleNotificationDrawer()" title="View In-App Alert History">
+        <span class="bell-icon">🔔</span>
+        <span class="notification-badge" id="notification-badge">0</span>
+      </button>
+
+      <button class="btn-audio-toggle" id="btn-audio-toggle" onclick="toggleAudioAlerts()" title="Toggle Alert Sound Chimes">
+        <span id="audio-icon">🔊</span> <span id="audio-label">Sound: ON</span>
+      </button>
+
       <div class="stat-pill">
         <div class="indicator online" id="server-status-dot"></div>
         <span id="server-status-text">Cloud Server: Online</span>
@@ -46,6 +57,26 @@
       </div>
     </div>
   </header>
+
+  <!-- In-App Floating Toast Alerts Container -->
+  <div id="in-app-toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- In-App Notification History Drawer / Modal -->
+  <div id="notification-drawer" class="notification-drawer hidden">
+    <div class="drawer-header">
+      <div style="display:flex; align-items:center; gap:0.5rem;">
+        <span>🔔</span>
+        <strong>In-App Alert Activity & Hazard Logs</strong>
+      </div>
+      <div style="display:flex; gap:0.5rem; align-items:center;">
+        <button class="btn-clear-alerts" onclick="clearAlertHistory()">Clear Logs</button>
+        <button class="btn-close" onclick="toggleNotificationDrawer()">✕</button>
+      </div>
+    </div>
+    <div class="drawer-body" id="drawer-alerts-list">
+      <div class="empty-drawer-msg">No alerts triggered yet. System monitoring within normal limits.</div>
+    </div>
+  </div>
 
   <!-- Interactive Simulation Studio Modal / Control Bar -->
   <div id="simulation-modal" class="sim-modal hidden">
