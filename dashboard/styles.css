@@ -273,6 +273,11 @@ header {
 
 .btn-emergency:hover { opacity: 0.9; }
 
+/* Clean Dark GIS Map filter for OpenStreetMap (No API Key Required) */
+.leaflet-tile-pane {
+  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+}
+
 /* Custom Leaflet Map styling */
 .leaflet-popup-content-wrapper {
   background: #1e293b;
