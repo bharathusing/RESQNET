@@ -3,8 +3,16 @@
  * Multi-layer Leaflet GIS Mapping, Glowing divIcon Markers, Chart.js Hydrographs, and Simulation Studio
  */
 
-const API_BASE = "http://localhost:8000";
-const WS_URL = "ws://localhost:8000/ws/telemetry";
+// Dynamic Cloud & Localhost Host Detection
+const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+const API_BASE = isLocalhost && window.location.port !== "8000" && window.location.port !== "" 
+  ? `http://${window.location.hostname}:8000` 
+  : window.location.origin;
+
+const wsProto = window.location.protocol === "https:" ? "wss:" : "ws:";
+const WS_URL = isLocalhost && window.location.port !== "8000" && window.location.port !== ""
+  ? `ws://${window.location.hostname}:8000/ws/telemetry`
+  : `${wsProto}//${window.location.host}/ws/telemetry`;
 
 let map;
 let nodeMarkers = {};
