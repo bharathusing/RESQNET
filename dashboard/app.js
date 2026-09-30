@@ -1,6 +1,6 @@
 /**
  * RESQNET District Control Room Dashboard Logic
- * Real-time GIS Mapping, WebSocket Streaming, Chart.js Hydrographs, and Emergency Management
+ * Real-time GIS Mapping, WebSocket Streaming, Chart.js Hydrographs, and Interactive Simulation Studio
  */
 
 const API_BASE = "http://localhost:8000";
@@ -12,6 +12,8 @@ let selectedNodeId = "RESQ-NODE-01";
 let waterChartInstance = null;
 let landslideChartInstance = null;
 let websocket = null;
+let autoSequenceInterval = null;
+let autoSequenceStep = 0;
 
 // Initial Node Database Fallback
 let nodesData = [
@@ -23,7 +25,7 @@ let nodesData = [
 
 // Initialize Map
 function initMap() {
-  map = L.map('map-container').setView([13.0860, 13.0860 > 50 ? 80.2700 : 80.2720], 14);
+  map = L.map('map-container').setView([13.0860, 80.2720], 14);
 
   // Free OpenStreetMap (No API Key Required)
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -136,7 +138,7 @@ function renderNodeList() {
   const activeBadge = document.getElementById('active-alert-badge');
   if (criticalCount > 0) {
     activeBadge.textContent = `${criticalCount} CRITICAL`;
-    activeBadge.style.display = 'inline-block';
+    activeBadge.className = 'risk-tag critical';
   } else {
     activeBadge.textContent = `0 CRITICAL`;
     activeBadge.className = 'risk-tag normal';
@@ -146,6 +148,7 @@ function renderNodeList() {
 function selectNode(nodeId) {
   selectedNodeId = nodeId;
   document.getElementById('chart-title').textContent = `Real-Time Sensor Telemetry: ${nodeId}`;
+  document.getElementById('sim-selected-node-label').textContent = nodeId;
   renderNodeList();
   
   const targetNode = nodesData.find(n => n.id === nodeId);
@@ -154,6 +157,12 @@ function selectNode(nodeId) {
     if (nodeMarkers[nodeId]) {
       nodeMarkers[nodeId].openPopup();
     }
+    // Update sliders with selected node's current values
+    document.getElementById('slider-water').value = targetNode.water;
+    document.getElementById('slider-rain').value = targetNode.rain;
+    document.getElementById('slider-soil').value = targetNode.soil;
+    document.getElementById('slider-tilt').value = targetNode.tilt;
+    updateSliderLabels();
   }
 }
 
@@ -322,6 +331,124 @@ function handleIncomingTelemetry(msg) {
     if (msg.data.risk_level >= 2) {
       addIncidentCard(msg.data.risk_name, "CRITICAL", node.location, msg.data.explanation);
     }
+  }
+}
+
+// ==========================================
+// SIMULATION STUDIO & INJECTION FUNCTIONS
+// ==========================================
+function toggleSimModal() {
+  const modal = document.getElementById('simulation-modal');
+  modal.classList.toggle('hidden');
+}
+
+function updateSliderLabels() {
+  document.getElementById('val-slider-water').textContent = `${document.getElementById('slider-water').value} cm`;
+  document.getElementById('val-slider-rain').textContent = `${document.getElementById('slider-rain').value} mm/h`;
+  document.getElementById('val-slider-soil').textContent = `${document.getElementById('slider-soil').value} %`;
+  document.getElementById('val-slider-tilt').textContent = `${document.getElementById('slider-tilt').value} °`;
+  document.getElementById('val-slider-vib').textContent = `${document.getElementById('slider-vib').value} g`;
+}
+
+function sendTelemetryToServer(payload) {
+  fetch(`${API_BASE}/api/telemetry`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  }).catch(e => console.log("Local injection", e));
+}
+
+function injectScenario(preset) {
+  if (preset === "NORMAL") {
+    sendTelemetryToServer({ node_id: "RESQ-NODE-01", water_level_cm: 35.0, rain_intensity_mm_hr: 0.0, soil_moisture_pct: 25.0, tilt_angle_deg: 0.4, vibration_rms_g: 0.03, risk: 0, risk_name: "NORMAL", msg: "NORMAL: Baseline safety limits." });
+    sendTelemetryToServer({ node_id: "RESQ-NODE-02", water_level_cm: 0.0, rain_intensity_mm_hr: 0.0, soil_moisture_pct: 30.0, tilt_angle_deg: 1.0, vibration_rms_g: 0.04, risk: 0, risk_name: "NORMAL", msg: "NORMAL: Slope stable." });
+    sendTelemetryToServer({ node_id: "RESQ-NODE-03", water_level_cm: 45.0, rain_intensity_mm_hr: 0.0, soil_moisture_pct: 35.0, tilt_angle_deg: 0.3, vibration_rms_g: 0.02, risk: 0, risk_name: "NORMAL", msg: "NORMAL: Stream discharge rate normal." });
+    sendTelemetryToServer({ node_id: "RESQ-NODE-04", water_level_cm: 0.0, rain_intensity_mm_hr: 0.0, soil_moisture_pct: 15.0, tilt_angle_deg: 0.2, vibration_rms_g: 0.01, risk: 0, risk_name: "NORMAL", msg: "NORMAL: LoRa gateway link active." });
+  } else if (preset === "WARNING") {
+    sendTelemetryToServer({ node_id: "RESQ-NODE-01", water_level_cm: 195.0, rain_intensity_mm_hr: 55.0, soil_moisture_pct: 72.0, tilt_angle_deg: 0.8, vibration_rms_g: 0.08, risk: 1, risk_name: "WARNING", msg: "WARNING: High rainfall rate & elevated water level." });
+    sendTelemetryToServer({ node_id: "RESQ-NODE-02", water_level_cm: 0.0, rain_intensity_mm_hr: 60.0, soil_moisture_pct: 78.0, tilt_angle_deg: 3.2, vibration_rms_g: 0.25, risk: 1, risk_name: "WARNING", msg: "WARNING: Soil moisture saturation approaching critical limit." });
+    sendTelemetryToServer({ node_id: "RESQ-NODE-03", water_level_cm: 210.0, rain_intensity_mm_hr: 52.0, soil_moisture_pct: 75.0, tilt_angle_deg: 0.6, vibration_rms_g: 0.05, risk: 1, risk_name: "WARNING", msg: "WARNING: River clearance decreasing." });
+  } else if (preset === "CRITICAL_FLOOD") {
+    sendTelemetryToServer({ node_id: "RESQ-NODE-01", water_level_cm: 430.0, rain_intensity_mm_hr: 145.0, soil_moisture_pct: 90.0, tilt_angle_deg: 0.5, vibration_rms_g: 0.04, risk: 2, risk_name: "CRITICAL_FLOOD", msg: "CRITICAL FLASH FLOOD: River cresting at 4.3m depth! Immediate lowlands evacuation." });
+    sendTelemetryToServer({ node_id: "RESQ-NODE-03", water_level_cm: 525.0, rain_intensity_mm_hr: 135.0, soil_moisture_pct: 95.0, tilt_angle_deg: 0.4, vibration_rms_g: 0.03, risk: 2, risk_name: "CRITICAL_FLOOD", msg: "CRITICAL FLASH FLOOD: Causeway bridge completely inundated!" });
+  } else if (preset === "CRITICAL_LANDSLIDE") {
+    sendTelemetryToServer({ node_id: "RESQ-NODE-02", water_level_cm: 0.0, rain_intensity_mm_hr: 120.0, soil_moisture_pct: 99.0, tilt_angle_deg: 32.5, vibration_rms_g: 2.95, risk: 3, risk_name: "CRITICAL_LANDSLIDE", msg: "CRITICAL LANDSLIDE: Acute slope shear displacement! Tilt=32.5 deg, Soil=99%, Vib=2.95g" });
+  } else if (preset === "DUAL_DISASTER") {
+    sendTelemetryToServer({ node_id: "RESQ-NODE-01", water_level_cm: 435.0, rain_intensity_mm_hr: 150.0, soil_moisture_pct: 92.0, tilt_angle_deg: 0.5, vibration_rms_g: 0.04, risk: 2, risk_name: "CRITICAL_FLOOD", msg: "CRITICAL: Severe cloudburst flash flood inundation." });
+    sendTelemetryToServer({ node_id: "RESQ-NODE-02", water_level_cm: 0.0, rain_intensity_mm_hr: 130.0, soil_moisture_pct: 99.2, tilt_angle_deg: 35.0, vibration_rms_g: 3.10, risk: 3, risk_name: "CRITICAL_LANDSLIDE", msg: "CRITICAL: Massive hillside slope collapse in progress." });
+    sendTelemetryToServer({ node_id: "RESQ-NODE-03", water_level_cm: 530.0, rain_intensity_mm_hr: 140.0, soil_moisture_pct: 98.0, tilt_angle_deg: 0.4, vibration_rms_g: 0.03, risk: 2, risk_name: "CRITICAL_FLOOD", msg: "CRITICAL: Downstream bridge overtopped." });
+  }
+}
+
+function injectCustomSliderValues() {
+  const water = parseFloat(document.getElementById('slider-water').value);
+  const rain = parseFloat(document.getElementById('slider-rain').value);
+  const soil = parseFloat(document.getElementById('slider-soil').value);
+  const tilt = parseFloat(document.getElementById('slider-tilt').value);
+  const vib = parseFloat(document.getElementById('slider-vib').value);
+
+  // Evaluate risk level on the fly
+  let risk = 0;
+  let riskName = "NORMAL";
+  let msg = "NORMAL: Custom values within baseline.";
+
+  if (water >= 280 || (water > 200 && rain > 50)) {
+    risk = 2;
+    riskName = "CRITICAL_FLOOD";
+    msg = `CRITICAL: Flash flood surge! Water=${water}cm, Rain=${rain}mm/h`;
+  } else if ((tilt >= 7 && soil > 80) || (vib >= 0.65 && soil > 85)) {
+    risk = 3;
+    riskName = "CRITICAL_LANDSLIDE";
+    msg = `CRITICAL: Slope failure imminent! Tilt=${tilt} deg, Soil=${soil}%, Vib=${vib}g`;
+  } else if (rain > 30 || water > 180 || soil > 70 || tilt > 3) {
+    risk = 1;
+    riskName = "WARNING";
+    msg = `WARNING: Elevated hazard risk. Rain=${rain}mm/h, Soil=${soil}%`;
+  }
+
+  sendTelemetryToServer({
+    node_id: selectedNodeId,
+    water_level_cm: water,
+    rain_intensity_mm_hr: rain,
+    soil_moisture_pct: soil,
+    tilt_angle_deg: tilt,
+    vibration_rms_g: vib,
+    risk: risk,
+    risk_name: riskName,
+    msg: msg
+  });
+}
+
+function toggleAutoSequence() {
+  const btn = document.getElementById('btn-auto-sequence');
+  if (autoSequenceInterval) {
+    clearInterval(autoSequenceInterval);
+    autoSequenceInterval = null;
+    btn.textContent = "▶️ Run 1-Minute Live Disaster Sequence";
+    btn.style.background = "#10b981";
+  } else {
+    autoSequenceStep = 0;
+    btn.textContent = "⏹️ Stop Disaster Sequence";
+    btn.style.background = "#ef4444";
+    
+    autoSequenceInterval = setInterval(() => {
+      autoSequenceStep++;
+      if (autoSequenceStep <= 3) {
+        injectScenario("NORMAL");
+      } else if (autoSequenceStep <= 8) {
+        injectScenario("WARNING");
+      } else if (autoSequenceStep <= 14) {
+        injectScenario("CRITICAL_FLOOD");
+      } else if (autoSequenceStep <= 20) {
+        injectScenario("DUAL_DISASTER");
+      } else {
+        injectScenario("NORMAL");
+        clearInterval(autoSequenceInterval);
+        autoSequenceInterval = null;
+        btn.textContent = "▶️ Run 1-Minute Live Disaster Sequence";
+        btn.style.background = "#10b981";
+      }
+    }, 2000);
   }
 }
 
