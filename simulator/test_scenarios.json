@@ -1,0 +1,38 @@
+{
+  "scenarios": [
+    {
+      "id": "scenario_normal",
+      "name": "Baseline Dry Weather",
+      "description": "Normal water levels and stable geotechnical slopes with minor ambient noise.",
+      "duration_seconds": 15,
+      "nodes": {
+        "RESQ-NODE-01": {"water_level_cm": 45.0, "rain_intensity_mm_hr": 0.0, "soil_moisture_pct": 28.0, "tilt_angle_deg": 0.4, "vibration_rms_g": 0.04},
+        "RESQ-NODE-02": {"water_level_cm": 0.0, "rain_intensity_mm_hr": 0.0, "soil_moisture_pct": 32.0, "tilt_angle_deg": 1.1, "vibration_rms_g": 0.05},
+        "RESQ-NODE-03": {"water_level_cm": 60.0, "rain_intensity_mm_hr": 0.0, "soil_moisture_pct": 40.0, "tilt_angle_deg": 0.3, "vibration_rms_g": 0.03},
+        "RESQ-NODE-04": {"water_level_cm": 0.0, "rain_intensity_mm_hr": 0.0, "soil_moisture_pct": 15.0, "tilt_angle_deg": 0.2, "vibration_rms_g": 0.02}
+      }
+    },
+    {
+      "id": "scenario_flash_flood",
+      "name": "Sudden Cloudburst & Flash Flood Surge",
+      "description": "Torrential downpour causes rapid surge in upstream river levels at Node-01 and Node-03.",
+      "duration_seconds": 30,
+      "progression": [
+        {"step": 1, "rain": 45.0, "water_rise_rate": 8.0, "soil_rise": 15.0},
+        {"step": 2, "rain": 95.0, "water_rise_rate": 22.0, "soil_rise": 25.0},
+        {"step": 3, "rain": 140.0, "water_rise_rate": 45.0, "soil_rise": 30.0}
+      ]
+    },
+    {
+      "id": "scenario_landslide_shear",
+      "name": "Steep Slope Shear Failure & Mudslide",
+      "description": "Heavy rainfall saturates hillside soil at Node-02 leading to acute slope displacement and seismic vibration.",
+      "duration_seconds": 30,
+      "progression": [
+        {"step": 1, "soil_moisture_pct": 75.0, "tilt_angle_deg": 3.5, "vibration_rms_g": 0.25},
+        {"step": 2, "soil_moisture_pct": 92.0, "tilt_angle_deg": 8.2, "vibration_rms_g": 0.95},
+        {"step": 3, "soil_moisture_pct": 99.0, "tilt_angle_deg": 24.5, "vibration_rms_g": 2.40}
+      ]
+    }
+  ]
+}

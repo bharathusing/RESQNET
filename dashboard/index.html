@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RESQNET | District Disaster Early Warning Control Center</title>
+  
+  <!-- Leaflet CSS for GIS Mapping -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <!-- Chart.js for Live Telemetry Charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Top Header Navigation & Live Network Telemetry Status -->
+  <header>
+    <div class="brand">
+      <div class="logo-badge">RESQNET</div>
+      <div class="system-title">
+        <h1>District Flood & Landslide Command Center</h1>
+        <p>Problem ID: KH26-ECE-16 | Team 41 | Distributed IoT + Edge AI Network</p>
+      </div>
+    </div>
+
+    <div class="header-stats">
+      <div class="stat-pill">
+        <div class="indicator online" id="server-status-dot"></div>
+        <span id="server-status-text">Cloud Server: Online</span>
+      </div>
+      <div class="stat-pill">
+        <div class="indicator online" id="ws-status-dot"></div>
+        <span id="ws-status-text">WebSocket: Live Sync</span>
+      </div>
+      <div class="stat-pill">
+        <span>Active Nodes: <strong id="active-nodes-count">4 / 4</strong></span>
+      </div>
+      <div class="stat-pill">
+        <span>Mesh Health: <strong style="color: #10b981;">100% (LoRa 433MHz)</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main 3-Column Control Room Grid -->
+  <div class="main-container">
+    
+    <!-- Left Panel: Distributed Node Management -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>Field Sensor Nodes</span>
+        <button onclick="refreshNodes()" style="background:transparent; border:none; color:var(--accent-cyan); cursor:pointer; font-size:0.75rem;">↻ Refresh</button>
+      </div>
+      <div class="node-list" id="node-list-container">
+        <!-- Dynamic Node Cards Injected Here -->
+        <div style="padding:1rem; text-align:center; color:var(--text-secondary);">Loading sensor network topology...</div>
+      </div>
+    </div>
+
+    <!-- Center Panel: Live GIS Map + Real-time Telemetry Hydrographs -->
+    <div class="panel">
+      <div class="center-content">
+        <!-- Interactive Leaflet Map -->
+        <div id="map-container"></div>
+
+        <!-- Telemetry Graphs -->
+        <div class="telemetry-charts-panel">
+          <div class="panel-header" style="border:none; padding-bottom:0.4rem;">
+            <span id="chart-title">Real-Time Sensor Telemetry: RESQ-NODE-01</span>
+            <span style="font-size:0.75rem; color:var(--text-secondary);">Sampling Interval: 2s | Edge AI Fusion</span>
+          </div>
+          <div class="charts-grid">
+            <div class="chart-box">
+              <canvas id="waterChart"></canvas>
+            </div>
+            <div class="chart-box">
+              <canvas id="landslideChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel: Real-time Incident Feed & Emergency Actions -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>Live Disaster Incidents</span>
+        <span class="risk-tag critical" id="active-alert-badge">0 CRITICAL</span>
+      </div>
+      
+      <div class="incident-feed" id="incident-feed-container">
+        <div class="incident-card" style="border-left-color: var(--status-normal);">
+          <div class="incident-time">SYSTEM STATUS</div>
+          <strong>Continuous Surveillance Active</strong>
+          <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.2rem;">All sensor parameters within baseline thresholds. LoRa mesh telemetry synced.</p>
+        </div>
+      </div>
+
+      <div class="action-bar">
+        <button class="btn-emergency" onclick="triggerManualEmergencyModal()">
+          <span style="font-size:1.1rem;">🚨</span> Broadcast District Evacuation Siren
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Main Application Script -->
+  <script src="app.js"></script>
+</body>
+</html>
