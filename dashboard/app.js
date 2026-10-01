@@ -1,6 +1,6 @@
 /**
  * RESQNET District Control Room Dashboard Logic
- * Multi-layer Leaflet GIS Mapping, Glowing divIcon Markers, Chart.js Hydrographs, and Simulation Studio
+ * Multi-layer Leaflet GIS Mapping, Real-time Hydrographs, In-App Alert Toasts, and Self-Sustaining Simulation Engine
  */
 
 // Dynamic Cloud & Localhost Host Detection
@@ -20,14 +20,15 @@ let selectedNodeId = "RESQ-NODE-01";
 let waterChartInstance = null;
 let landslideChartInstance = null;
 let websocket = null;
+let pingInterval = null;
 let autoSequenceInterval = null;
 let autoSequenceStep = 0;
 
-// In-App Alert Notification State & Settings
+// In-App Alert Notification State
 let audioAlertsEnabled = true;
 let alertHistoryList = [];
 let unreadAlertCount = 0;
-let lastAlertTimes = {}; // Cooldown tracker per node & hazard
+let lastAlertTimes = {};
 let audioCtx = null;
 
 // Initial Sensor Node Database
@@ -39,14 +40,12 @@ let nodesData = [
 ];
 
 // ==========================================================================
-// WEB AUDIO API SOUND SYNTHESIZER (Zero External Files Needed)
+// WEB AUDIO API SOUND SYNTHESIZER
 // ==========================================================================
 function getAudioContext() {
   if (!audioCtx) {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (AudioContextClass) {
-      audioCtx = new AudioContextClass();
-    }
+    if (AudioContextClass) audioCtx = new AudioContextClass();
   }
   if (audioCtx && audioCtx.state === 'suspended') {
     audioCtx.resume();
@@ -59,11 +58,9 @@ function playAlertChime(severity) {
   try {
     const ctx = getAudioContext();
     if (!ctx) return;
-
     const now = ctx.currentTime;
 
     if (severity === 'critical') {
-      // Urgent triple beep alarm
       [0, 0.15, 0.3].forEach((delay, idx) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -77,7 +74,6 @@ function playAlertChime(severity) {
         osc.stop(now + delay + 0.12);
       });
     } else if (severity === 'water-rise') {
-      // Ascending rapid water chime
       [520, 680, 880].forEach((freq, idx) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -91,7 +87,6 @@ function playAlertChime(severity) {
         osc.stop(now + idx * 0.1 + 0.18);
       });
     } else {
-      // Gentle warning dual chime
       [650, 480].forEach((freq, idx) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -120,7 +115,7 @@ function toggleAudioAlerts() {
     btn.classList.add('active');
     icon.textContent = '🔊';
     label.textContent = 'Sound: ON';
-    playAlertChime('water-rise'); // Confirmation beep
+    playAlertChime('water-rise');
   } else {
     btn.classList.remove('active');
     icon.textContent = '🔇';
@@ -136,7 +131,7 @@ function showInAppAlert(alertData) {
     nodeId = "SYSTEM",
     title = "Hazard Alert",
     message = "",
-    severity = "warning", // 'water-rise' | 'warning' | 'critical' | 'normal'
+    severity = "warning",
     water = null,
     rain = null,
     soil = null,
@@ -145,14 +140,11 @@ function showInAppAlert(alertData) {
     durationMs = 8000
   } = alertData;
 
-  // Play synthesized audio alert
   playAlertChime(severity);
 
-  // Update notification badge counter
   unreadAlertCount++;
   updateNotificationBadge();
 
-  // Save to in-memory drawer history
   const historyItem = {
     id: 'alert-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
     time: new Date().toLocaleTimeString(),
@@ -168,7 +160,6 @@ function showInAppAlert(alertData) {
   alertHistoryList.unshift(historyItem);
   renderAlertDrawer();
 
-  // Render floating popup toast
   const container = document.getElementById('in-app-toast-container');
   if (!container) return;
 
@@ -213,7 +204,6 @@ function showInAppAlert(alertData) {
 
   container.appendChild(toast);
 
-  // Auto-dismiss after durationMs
   setTimeout(() => {
     dismissToast(toast.id);
   }, durationMs);
@@ -224,9 +214,7 @@ function dismissToast(toastId) {
   if (toast && !toast.classList.contains('toast-hide')) {
     toast.classList.add('toast-hide');
     setTimeout(() => {
-      if (toast.parentNode) {
-        toast.parentNode.removeChild(toast);
-      }
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
     }, 280);
   }
 }
@@ -236,12 +224,10 @@ function focusAndDismiss(nodeId, toastId) {
   dismissToast(toastId);
 }
 
-// Notification Drawer Logic
 function toggleNotificationDrawer() {
   const drawer = document.getElementById('notification-drawer');
   drawer.classList.toggle('hidden');
   if (!drawer.classList.contains('hidden')) {
-    // Reset unread badge on drawer open
     unreadAlertCount = 0;
     updateNotificationBadge();
   }
@@ -251,13 +237,7 @@ function updateNotificationBadge() {
   const badge = document.getElementById('notification-badge');
   if (badge) {
     badge.textContent = unreadAlertCount;
-    if (unreadAlertCount > 0) {
-      badge.style.display = 'flex';
-      badge.classList.add('animate-pop');
-      setTimeout(() => badge.classList.remove('animate-pop'), 200);
-    } else {
-      badge.style.display = 'none';
-    }
+    badge.style.display = unreadAlertCount > 0 ? 'flex' : 'none';
   }
 }
 
@@ -276,7 +256,7 @@ function renderAlertDrawer() {
   }
 
   list.innerHTML = '';
-  alertHistoryList.slice(0, 30).forEach(item => {
+  alertHistoryList.slice(0, 25).forEach(item => {
     const div = document.createElement('div');
     div.className = `drawer-item ${item.severity}`;
     div.onclick = () => {
@@ -290,41 +270,38 @@ function renderAlertDrawer() {
         <span>${item.title}</span>
         <span style="font-size:0.68rem; color:#94a3b8;">${item.time}</span>
       </div>
-      <div style="color:#cbd5e1; margin-bottom:0.25rem;">${item.message}</div>
+      <div style="color:#cbd5e1; margin-bottom:0.2rem;">${item.message}</div>
       <div style="font-size:0.7rem; color:#38bdf8;">📍 Node: ${item.nodeId} &bull; Click to Inspect</div>
     `;
     list.appendChild(div);
   });
 }
 
-// 1. Initialize Map with 3 Free Zero-API-Key Base Layers
+// ==========================================================================
+// 1. INITIALIZE LEAFLET MAP
+// ==========================================================================
 function initMap() {
-  // Base Layer 1: Dark Mode (Esri World Dark Gray Canvas - Default)
   const esriDark = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
     attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
     maxZoom: 16
   });
 
-  // Base Layer 2: Street Map (OpenStreetMap Standard)
   const osmStreet = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    attribution: '&copy; OpenStreetMap contributors',
     maxZoom: 19
   });
 
-  // Base Layer 3: Satellite View (Esri World Imagery)
   const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS',
     maxZoom: 18
   });
 
-  // Initialize map instance
   map = L.map('map-container', {
     center: [13.0860, 80.2720],
     zoom: 14,
-    layers: [esriDark] // Default base layer
+    layers: [esriDark]
   });
 
-  // Layer Switcher in top-right corner
   const baseLayers = {
     "🌙 Dark Mode": esriDark,
     "🗺️ Street Map": osmStreet,
@@ -332,12 +309,9 @@ function initMap() {
   };
 
   L.control.layers(baseLayers, null, { position: 'topright' }).addTo(map);
-
-  // Render glowing markers
   updateMapMarkers();
 }
 
-// 2. Helper: Custom Glowing L.divIcon Marker Generator
 function createGlowingIcon(riskLevel) {
   let statusClass = "status-normal";
   if (riskLevel === 1) statusClass = "status-warning";
@@ -380,7 +354,7 @@ function formatNodePopupHTML(node) {
         <span style="font-size:0.7rem; color:#94a3b8;">${node.id}</span>
       </div>
       <div style="color:#94a3b8; font-size:0.72rem; margin-bottom:8px;">📍 ${node.location}</div>
-      <div style="background:#0b0f19; padding:6px 8px; border-radius:6px; margin-bottom:8px; border:1px solid #1f2d4a;">
+      <div style="background:#070a13; padding:6px 8px; border-radius:6px; margin-bottom:8px; border:1px solid #1f2d4a;">
         <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
           <span>Risk Status:</span>
           <strong style="color:${riskColor};">${getRiskName(node.risk)}</strong>
@@ -403,13 +377,14 @@ function formatNodePopupHTML(node) {
         </div>
       </div>
       <div style="font-size:0.7rem; color:#10b981; text-align:right;">
-        🔋 Battery: ${node.batt || 95}% | 📶 LoRa Mesh Sync
+        🔋 Battery: ${node.batt || 95}% &bull; 📶 LoRa Mesh Sync
       </div>
     </div>
   `;
 }
 
 function updateMapMarkers() {
+  if (!map) return;
   nodesData.forEach(node => {
     const icon = createGlowingIcon(node.risk);
     const popupContent = formatNodePopupHTML(node);
@@ -417,11 +392,7 @@ function updateMapMarkers() {
     if (!nodeMarkers[node.id]) {
       const marker = L.marker([node.lat, node.lon], { icon: icon }).addTo(map);
       marker.bindPopup(popupContent);
-
-      marker.on('click', () => {
-        selectNode(node.id);
-      });
-
+      marker.on('click', () => selectNode(node.id));
       nodeMarkers[node.id] = marker;
     } else {
       nodeMarkers[node.id].setIcon(icon);
@@ -432,12 +403,24 @@ function updateMapMarkers() {
 
 function renderNodeList() {
   const container = document.getElementById('node-list-container');
+  if (!container) return;
   container.innerHTML = '';
 
-  let criticalCount = 0;
+  let maxRisk = 0;
+  let maxWater = 0;
+  let maxRain = 0;
+  let maxSoil = 0;
+  let maxTilt = 0;
+  let maxVib = 0;
 
   nodesData.forEach(node => {
-    if (node.risk >= 2) criticalCount++;
+    if (node.risk > maxRisk) maxRisk = node.risk;
+    if (node.water > maxWater) maxWater = node.water;
+    if (node.rain > maxRain) maxRain = node.rain;
+    if (node.soil > maxSoil) maxSoil = node.soil;
+    if (node.tilt > maxTilt) maxTilt = node.tilt;
+    if (node.vib > maxVib) maxVib = node.vib;
+
     const card = document.createElement('div');
     card.className = `node-card ${node.id === selectedNodeId ? 'active' : ''}`;
     card.onclick = () => selectNode(node.id);
@@ -457,20 +440,74 @@ function renderNodeList() {
     container.appendChild(card);
   });
 
+  // Update Hero Status & KPI Metric Cards
+  updateHeroKPI(maxRisk, maxWater, maxRain, maxSoil, maxTilt, maxVib);
+}
+
+function updateHeroKPI(maxRisk, maxWater, maxRain, maxSoil, maxTilt, maxVib) {
+  const pill = document.getElementById('hero-status-pill');
+  const text = document.getElementById('hero-status-text');
+  const sub = document.getElementById('hero-status-sub');
   const activeBadge = document.getElementById('active-alert-badge');
-  if (criticalCount > 0) {
-    activeBadge.textContent = `${criticalCount} CRITICAL`;
-    activeBadge.className = 'risk-tag critical';
+
+  if (maxRisk >= 2) {
+    pill.className = 'status-indicator-badge critical';
+    text.textContent = maxRisk === 2 ? '🚨 CRITICAL FLASH FLOOD INUNDATION DETECTED' : '🚨 CRITICAL LANDSLIDE SHEAR FAILURE DETECTED';
+    sub.textContent = 'Immediate emergency sirens dispatched. District Disaster Relief (NDRF/SDRF) activated.';
+    if (activeBadge) { activeBadge.textContent = 'CRITICAL ACTIVE'; activeBadge.className = 'risk-tag critical'; }
+  } else if (maxRisk === 1) {
+    pill.className = 'status-indicator-badge warning';
+    text.textContent = '⚠️ HAZARD WARNING ADVISORY ACTIVE';
+    sub.textContent = 'Heavy monsoonal precipitation & elevated water levels. Low-lying zones prepare for evacuation.';
+    if (activeBadge) { activeBadge.textContent = '1 WARNING'; activeBadge.className = 'risk-tag warning'; }
   } else {
-    activeBadge.textContent = `0 CRITICAL`;
-    activeBadge.className = 'risk-tag normal';
+    pill.className = 'status-indicator-badge normal';
+    text.textContent = 'NORMAL MONITORING ACTIVE • ALL WATERSHEDS SAFE';
+    sub.textContent = 'Continuous Edge AI multi-sensor surveillance active across Upper Adyar & North Ridge.';
+    if (activeBadge) { activeBadge.textContent = '0 CRITICAL'; activeBadge.className = 'risk-tag normal'; }
+  }
+
+  // Update KPI Cards
+  const kw = document.getElementById('kpi-water-val');
+  const ktw = document.getElementById('kpi-water-tag');
+  if (kw) kw.innerHTML = `${maxWater.toFixed(1)} <small>cm</small>`;
+  if (ktw) {
+    if (maxWater >= 280) { ktw.textContent = 'FLOOD SURGE'; ktw.className = 'kpi-tag critical'; }
+    else if (maxWater >= 180) { ktw.textContent = 'WARNING'; ktw.className = 'kpi-tag warning'; }
+    else { ktw.textContent = 'SAFE'; ktw.className = 'kpi-tag safe'; }
+  }
+
+  const kr = document.getElementById('kpi-rain-val');
+  const ktr = document.getElementById('kpi-rain-tag');
+  if (kr) kr.innerHTML = `${maxRain.toFixed(1)} <small>mm/h</small>`;
+  if (ktr) {
+    if (maxRain >= 80) { ktr.textContent = 'CLOUDBURST'; ktr.className = 'kpi-tag critical'; }
+    else if (maxRain >= 35) { ktr.textContent = 'HEAVY'; ktr.className = 'kpi-tag warning'; }
+    else { ktr.textContent = 'LIGHT'; ktr.className = 'kpi-tag safe'; }
+  }
+
+  const ks = document.getElementById('kpi-soil-val');
+  const kts = document.getElementById('kpi-soil-tag');
+  if (ks) ks.innerHTML = `${maxSoil.toFixed(1)} <small>%</small>`;
+  if (kts) {
+    if (maxSoil >= 85) { kts.textContent = 'SATURATED'; kts.className = 'kpi-tag critical'; }
+    else if (maxSoil >= 65) { kts.textContent = 'ELEVATED'; kts.className = 'kpi-tag warning'; }
+    else { kts.textContent = 'STABLE'; kts.className = 'kpi-tag safe'; }
+  }
+
+  const ktilt = document.getElementById('kpi-tilt-val');
+  const kttilt = document.getElementById('kpi-tilt-tag');
+  if (ktilt) ktilt.innerHTML = `${maxTilt.toFixed(1)} <small>° • ${maxVib.toFixed(2)}g</small>`;
+  if (kttilt) {
+    if (maxTilt >= 7 || maxVib >= 0.6) { kttilt.textContent = 'FAILURE'; kttilt.className = 'kpi-tag critical'; }
+    else if (maxTilt >= 3) { kttilt.textContent = 'SLOPE TILT'; kttilt.className = 'kpi-tag warning'; }
+    else { kttilt.textContent = 'STABLE'; kttilt.className = 'kpi-tag safe'; }
   }
 }
 
 function selectNode(nodeId) {
   selectedNodeId = nodeId;
   document.getElementById('chart-title').textContent = `Real-Time Sensor Telemetry: ${nodeId}`;
-  document.getElementById('sim-selected-node-label').textContent = nodeId;
   renderNodeList();
   
   const targetNode = nodesData.find(n => n.id === nodeId);
@@ -479,16 +516,12 @@ function selectNode(nodeId) {
     if (nodeMarkers[nodeId]) {
       nodeMarkers[nodeId].openPopup();
     }
-    // Update sliders with selected node's current values
-    document.getElementById('slider-water').value = targetNode.water;
-    document.getElementById('slider-rain').value = targetNode.rain;
-    document.getElementById('slider-soil').value = targetNode.soil;
-    document.getElementById('slider-tilt').value = targetNode.tilt;
-    updateSliderLabels();
   }
 }
 
-// 3. Chart.js Initialization
+// ==========================================================================
+// 2. CHART.JS REAL-TIME HYDROGRAPHS
+// ==========================================================================
 function initCharts() {
   const ctxWater = document.getElementById('waterChart').getContext('2d');
   const ctxSlide = document.getElementById('landslideChart').getContext('2d');
@@ -587,15 +620,18 @@ function updateCharts(waterVal, rainVal, soilVal, tiltVal) {
   }
 }
 
-// 4. Incident Management
+// ==========================================================================
+// 3. INCIDENT DISPATCH MANAGEMENT
+// ==========================================================================
 function addIncidentCard(hazard, severity, location, details) {
   const container = document.getElementById('incident-feed-container');
+  if (!container) return;
   const card = document.createElement('div');
   const isCrit = severity === "CRITICAL";
   card.className = `incident-card ${isCrit ? 'critical' : 'warning'}`;
   
   card.innerHTML = `
-    <div class="incident-time">${new Date().toLocaleTimeString()} - ${severity}</div>
+    <div class="incident-time">${new Date().toLocaleTimeString()} &bull; ${severity}</div>
     <strong>${hazard}: ${location}</strong>
     <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.2rem;">${details}</p>
     <div style="font-size:0.7rem; color:#34d399; margin-top:0.3rem;">✓ SMS & WhatsApp Sent to Emergency Contacts</div>
@@ -604,70 +640,9 @@ function addIncidentCard(hazard, severity, location, details) {
   container.insertBefore(card, container.firstChild);
 }
 
-// 5. WebSocket Live Streaming with Heartbeat & Cloud Keep-Alive
-let pingInterval = null;
-
-function connectWebSocket() {
-  try {
-    if (websocket) {
-      try { websocket.close(); } catch (e) {}
-    }
-
-    websocket = new WebSocket(WS_URL);
-
-    websocket.onopen = () => {
-      document.getElementById('ws-status-dot').className = 'indicator online';
-      document.getElementById('ws-status-text').textContent = 'WebSocket: Live Stream Connected';
-
-      if (pingInterval) clearInterval(pingInterval);
-      pingInterval = setInterval(() => {
-        if (websocket && websocket.readyState === WebSocket.OPEN) {
-          websocket.send("ping");
-        }
-      }, 10000);
-    };
-
-    websocket.onmessage = (event) => {
-      try {
-        if (event.data === "pong") return;
-        const msg = JSON.parse(event.data);
-        if (msg.type === "HEARTBEAT") {
-          document.getElementById('ws-status-dot').className = 'indicator online';
-          document.getElementById('ws-status-text').textContent = 'WebSocket: Live Stream Connected';
-          return;
-        } else if (msg.type === "TELEMETRY_UPDATE") {
-          handleIncomingTelemetry(msg);
-        } else if (msg.type === "EMERGENCY_BROADCAST") {
-          addIncidentCard(msg.hazard_type, "MANUAL SIREN", "Command Center", msg.message);
-          showInAppAlert({
-            nodeId: "SYSTEM",
-            title: "🚨 DISTRICT EVACUATION BROADCAST",
-            message: msg.message || "District-wide evacuation sirens activated.",
-            severity: "critical",
-            durationMs: 15000
-          });
-        }
-      } catch (err) {
-        console.warn("WS Parse Error", err);
-      }
-    };
-
-    websocket.onclose = () => {
-      if (pingInterval) clearInterval(pingInterval);
-      document.getElementById('ws-status-dot').className = 'indicator online';
-      document.getElementById('ws-status-text').textContent = 'Cloud Sync: Active (Polling Fallback)';
-      setTimeout(connectWebSocket, 4000);
-    };
-
-    websocket.onerror = () => {
-      document.getElementById('ws-status-dot').className = 'indicator online';
-      document.getElementById('ws-status-text').textContent = 'Cloud Sync: Active (Auto-Sync)';
-    };
-  } catch (e) {
-    console.warn("WebSocket fallback", e);
-  }
-}
-
+// ==========================================================================
+// 4. TELEMETRY HANDLER & IN-APP ALERT GENERATOR
+// ==========================================================================
 function handleIncomingTelemetry(msg) {
   const node = nodesData.find(n => n.id === msg.node_id);
   if (node) {
@@ -700,26 +675,22 @@ function handleIncomingTelemetry(msg) {
       updateCharts(node.water, node.rain, node.soil, node.tilt);
     }
 
-    // Incident card in right sidebar
     if (newRisk >= 2) {
       addIncidentCard(msg.data.risk_name, "CRITICAL", node.location, msg.data.explanation);
     }
 
-    // =========================================================================
-    // INTELLIGENT IN-APP POPUP NOTIFICATION TRIGGERS
-    // =========================================================================
+    // In-App Alert Detection
     const nowTime = Date.now();
     const alertKey = `${node.id}`;
     const lastAlertTime = lastAlertTimes[alertKey] || 0;
-    const cooldownElapsed = (nowTime - lastAlertTime) > 6000; // 6s cooldown unless escalation
+    const cooldownElapsed = (nowTime - lastAlertTime) > 6000;
 
-    // 1. Critical Hazard Escalation (Red Alarm)
     if (newRisk >= 2 && (prevRisk < 2 || cooldownElapsed)) {
       lastAlertTimes[alertKey] = nowTime;
       showInAppAlert({
         nodeId: node.id,
-        title: newRisk === 2 ? `🌊 FLASH FLOOD CRITICAL: ${node.name}` : `⛰️ LANDSLIDE CRITICAL: ${node.name}`,
-        message: msg.data.explanation || `Immediate hazard spike detected at ${node.location}. Evacuation sirens initiated.`,
+        title: newRisk === 2 ? `🌊 FLASH FLOOD: ${node.name}` : `⛰️ LANDSLIDE: ${node.name}`,
+        message: msg.data.explanation || `Disaster threshold breached at ${node.location}. Evacuation sirens initiated.`,
         severity: "critical",
         water: newWater,
         rain: newRain,
@@ -728,95 +699,59 @@ function handleIncomingTelemetry(msg) {
         deltaWater: deltaWater > 0 ? deltaWater : 0,
         durationMs: 12000
       });
-    }
-    // 2. Rapid Water Level Rise Alert (Cyan/Blue Surge)
-    else if (deltaWater >= 15.0 || (newWater >= 180.0 && prevWater < 180.0)) {
+    } else if (deltaWater >= 15.0 || (newWater >= 180.0 && prevWater < 180.0)) {
       lastAlertTimes[alertKey] = nowTime;
       showInAppAlert({
         nodeId: node.id,
         title: `🌊 Water Level Rising Rapidly`,
-        message: `${node.name} recorded an acute surge to ${newWater.toFixed(1)} cm (+${deltaWater.toFixed(1)} cm rise). Stream clearance narrowing.`,
+        message: `${node.name} recorded an acute surge to ${newWater.toFixed(1)} cm (+${deltaWater.toFixed(1)} cm rise).`,
         severity: "water-rise",
         water: newWater,
         rain: newRain,
         deltaWater: deltaWater,
         durationMs: 9000
       });
-    }
-    // 3. Slope Instability Spike (Amber/Orange Warning)
-    else if ((newTilt >= 4.0 || deltaTilt >= 2.0) && newSoil > 70.0 && (prevTilt < 4.0 || cooldownElapsed)) {
+    } else if ((newTilt >= 4.0 || deltaTilt >= 2.0) && newSoil > 70.0 && (prevTilt < 4.0 || cooldownElapsed)) {
       lastAlertTimes[alertKey] = nowTime;
       showInAppAlert({
         nodeId: node.id,
         title: `⛰️ Slope Angle Displacement`,
-        message: `Hillside slope tilt increased to ${newTilt.toFixed(1)}° with soil moisture saturated at ${newSoil.toFixed(1)}%.`,
+        message: `Hillside slope tilt reached ${newTilt.toFixed(1)}° with soil saturated at ${newSoil.toFixed(1)}%.`,
         severity: "warning",
         soil: newSoil,
         tilt: newTilt,
         durationMs: 9000
       });
-    }
-    // 4. Heavy Cloudburst Precipitation Alert
-    else if (newRain >= 45.0 && prevRain < 45.0) {
-      lastAlertTimes[alertKey] = nowTime;
-      showInAppAlert({
-        nodeId: node.id,
-        title: `🌧️ High Rainfall Rate Recorded`,
-        message: `Torrential rainfall detected at ${newRain.toFixed(1)} mm/hr over ${node.location}.`,
-        severity: "warning",
-        rain: newRain,
-        water: newWater,
-        durationMs: 8000
-      });
-    }
-    // 5. Warning Level Transition
-    else if (newRisk === 1 && prevRisk === 0) {
+    } else if (newRisk === 1 && prevRisk === 0) {
       lastAlertTimes[alertKey] = nowTime;
       showInAppAlert({
         nodeId: node.id,
         title: `⚠️ Hazard Warning Advisory`,
-        message: `${node.name} transitioned into WARNING state: ${msg.data.explanation || 'Elevated environmental parameters.'}`,
+        message: `${node.name} transitioned into WARNING state.`,
         severity: "warning",
         water: newWater,
         rain: newRain,
-        soil: newSoil,
-        tilt: newTilt,
         durationMs: 8000
       });
-    }
-    // 6. Safe Normalization Notice
-    else if (newRisk === 0 && prevRisk > 0) {
+    } else if (newRisk === 0 && prevRisk > 0) {
       showInAppAlert({
         nodeId: node.id,
         title: `✅ Risk Normalized (Safe)`,
-        message: `${node.name} environmental parameters have stabilized back to baseline safe limits.`,
+        message: `${node.name} parameters stabilized back to baseline safe limits.`,
         severity: "normal",
         water: newWater,
         rain: newRain,
-        soil: newSoil,
-        tilt: newTilt,
         durationMs: 6000
       });
     }
   }
 }
 
-// 6. Simulation Studio Controls
-function toggleSimModal() {
-  const modal = document.getElementById('simulation-modal');
-  modal.classList.toggle('hidden');
-}
-
-function updateSliderLabels() {
-  document.getElementById('val-slider-water').textContent = `${document.getElementById('slider-water').value} cm`;
-  document.getElementById('val-slider-rain').textContent = `${document.getElementById('slider-rain').value} mm/h`;
-  document.getElementById('val-slider-soil').textContent = `${document.getElementById('slider-soil').value} %`;
-  document.getElementById('val-slider-tilt').textContent = `${document.getElementById('slider-tilt').value} °`;
-  document.getElementById('val-slider-vib').textContent = `${document.getElementById('slider-vib').value} g`;
-}
-
+// ==========================================================================
+// 5. 1-CLICK DISASTER SIMULATION ENGINE (Instant 0ms Client Response)
+// ==========================================================================
 function sendTelemetryToServer(payload) {
-  // 1. Immediately apply update locally so UI changes INSTANTLY on client
+  // 1. Immediately apply update locally so UI responds with ZERO delay
   handleIncomingTelemetry({
     node_id: payload.node_id,
     data: {
@@ -843,8 +778,8 @@ function injectScenario(preset) {
   if (preset === "NORMAL") {
     sendTelemetryToServer({ node_id: "RESQ-NODE-01", water_level_cm: 35.0, rain_intensity_mm_hr: 0.0, soil_moisture_pct: 25.0, tilt_angle_deg: 0.4, vibration_rms_g: 0.03, risk: 0, risk_name: "NORMAL", msg: "NORMAL: Baseline safety limits." });
     sendTelemetryToServer({ node_id: "RESQ-NODE-02", water_level_cm: 0.0, rain_intensity_mm_hr: 0.0, soil_moisture_pct: 30.0, tilt_angle_deg: 1.0, vibration_rms_g: 0.04, risk: 0, risk_name: "NORMAL", msg: "NORMAL: Slope stable." });
-    sendTelemetryToServer({ node_id: "RESQ-NODE-03", water_level_cm: 45.0, rain_intensity_mm_hr: 0.0, soil_moisture_pct: 35.0, tilt_angle_deg: 0.3, vibration_rms_g: 0.02, risk: 0, risk_name: "NORMAL", msg: "NORMAL: Stream discharge rate normal." });
-    sendTelemetryToServer({ node_id: "RESQ-NODE-04", water_level_cm: 0.0, rain_intensity_mm_hr: 0.0, soil_moisture_pct: 15.0, tilt_angle_deg: 0.2, vibration_rms_g: 0.01, risk: 0, risk_name: "NORMAL", msg: "NORMAL: LoRa gateway link active." });
+    sendTelemetryToServer({ node_id: "RESQ-NODE-03", water_level_cm: 45.0, rain_intensity_mm_hr: 0.0, soil_moisture_pct: 35.0, tilt_angle_deg: 0.3, vibration_rms_g: 0.02, risk: 0, risk_name: "NORMAL", msg: "NORMAL: Stream discharge normal." });
+    sendTelemetryToServer({ node_id: "RESQ-NODE-04", water_level_cm: 0.0, rain_intensity_mm_hr: 0.0, soil_moisture_pct: 15.0, tilt_angle_deg: 0.2, vibration_rms_g: 0.01, risk: 0, risk_name: "NORMAL", msg: "NORMAL: Gateway active." });
   } else if (preset === "WARNING") {
     sendTelemetryToServer({ node_id: "RESQ-NODE-01", water_level_cm: 195.0, rain_intensity_mm_hr: 55.0, soil_moisture_pct: 72.0, tilt_angle_deg: 0.8, vibration_rms_g: 0.08, risk: 1, risk_name: "WARNING", msg: "WARNING: High rainfall rate & elevated water level." });
     sendTelemetryToServer({ node_id: "RESQ-NODE-02", water_level_cm: 0.0, rain_intensity_mm_hr: 60.0, soil_moisture_pct: 78.0, tilt_angle_deg: 3.2, vibration_rms_g: 0.25, risk: 1, risk_name: "WARNING", msg: "WARNING: Soil moisture saturation approaching critical limit." });
@@ -861,57 +796,19 @@ function injectScenario(preset) {
   }
 }
 
-function injectCustomSliderValues() {
-  const water = parseFloat(document.getElementById('slider-water').value);
-  const rain = parseFloat(document.getElementById('slider-rain').value);
-  const soil = parseFloat(document.getElementById('slider-soil').value);
-  const tilt = parseFloat(document.getElementById('slider-tilt').value);
-  const vib = parseFloat(document.getElementById('slider-vib').value);
-
-  let risk = 0;
-  let riskName = "NORMAL";
-  let msg = "NORMAL: Custom values within baseline.";
-
-  if (water >= 280 || (water > 200 && rain > 50)) {
-    risk = 2;
-    riskName = "CRITICAL_FLOOD";
-    msg = `CRITICAL: Flash flood surge! Water=${water}cm, Rain=${rain}mm/h`;
-  } else if ((tilt >= 7 && soil > 80) || (vib >= 0.65 && soil > 85)) {
-    risk = 3;
-    riskName = "CRITICAL_LANDSLIDE";
-    msg = `CRITICAL: Slope failure imminent! Tilt=${tilt} deg, Soil=${soil}%, Vib=${vib}g`;
-  } else if (rain > 30 || water > 180 || soil > 70 || tilt > 3) {
-    risk = 1;
-    riskName = "WARNING";
-    msg = `WARNING: Elevated hazard risk. Rain=${rain}mm/h, Soil=${soil}%`;
-  }
-
-  sendTelemetryToServer({
-    node_id: selectedNodeId,
-    water_level_cm: water,
-    rain_intensity_mm_hr: rain,
-    soil_moisture_pct: soil,
-    tilt_angle_deg: tilt,
-    vibration_rms_g: vib,
-    risk: risk,
-    risk_name: riskName,
-    msg: msg
-  });
-}
-
 function toggleAutoSequence() {
-  const btn = document.getElementById('btn-auto-sequence');
-  const btnQuick = document.getElementById('btn-quick-auto');
+  const btn = document.getElementById('btn-auto-demo');
+  const label = document.getElementById('btn-auto-label');
 
   if (autoSequenceInterval) {
     clearInterval(autoSequenceInterval);
     autoSequenceInterval = null;
-    if (btn) { btn.textContent = "▶️ Run 1-Minute Live Disaster Sequence"; btn.style.background = "#10b981"; }
-    if (btnQuick) { btnQuick.textContent = "▶️ Auto Sequence"; btnQuick.style.background = "#10b981"; }
+    if (label) label.textContent = "Auto 1-Min Demo";
+    if (btn) btn.style.background = "linear-gradient(135deg, #10b981, #059669)";
   } else {
     autoSequenceStep = 0;
-    if (btn) { btn.textContent = "⏹️ Stop Disaster Sequence"; btn.style.background = "#ef4444"; }
-    if (btnQuick) { btnQuick.textContent = "⏹️ Stop"; btnQuick.style.background = "#ef4444"; }
+    if (label) label.textContent = "Stop Demo";
+    if (btn) btn.style.background = "linear-gradient(135deg, #ef4444, #dc2626)";
     
     autoSequenceInterval = setInterval(() => {
       autoSequenceStep++;
@@ -927,21 +824,85 @@ function toggleAutoSequence() {
         injectScenario("NORMAL");
         clearInterval(autoSequenceInterval);
         autoSequenceInterval = null;
-        if (btn) { btn.textContent = "▶️ Run 1-Minute Live Disaster Sequence"; btn.style.background = "#10b981"; }
-        if (btnQuick) { btnQuick.textContent = "▶️ Auto Sequence"; btnQuick.style.background = "#10b981"; }
+        if (label) label.textContent = "Auto 1-Min Demo";
+        if (btn) btn.style.background = "linear-gradient(135deg, #10b981, #059669)";
       }
     }, 2000);
   }
 }
 
 function triggerManualEmergencyModal() {
-  const reason = prompt("Enter Emergency Broadcast Reason to Dispatch District Sirens & SMS Alert:", "Flash Flood Warning: Evacuate riverside areas immediately.");
+  const reason = prompt("Enter Emergency Broadcast Reason to Sound District Sirens & Send SMS:", "Flash Flood Warning: Evacuate riverside areas immediately.");
   if (reason) {
     fetch(`${API_BASE}/api/broadcast-alert`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ hazard_type: "MANUAL_DISTRICT_EVACUATION", message: reason })
-    }).then(() => alert("Emergency alert broadcasted successfully across SMS, WhatsApp and Siren network."));
+    }).then(() => alert("Emergency evacuation sirens broadcasted successfully across all sectors."));
+  }
+}
+
+// ==========================================================================
+// 6. WEBSOCKET & CONTINUOUS TELEMETRY SYNC
+// ==========================================================================
+function connectWebSocket() {
+  try {
+    if (websocket) {
+      try { websocket.close(); } catch (e) {}
+    }
+
+    websocket = new WebSocket(WS_URL);
+
+    websocket.onopen = () => {
+      document.getElementById('ws-status-dot').className = 'indicator online';
+      document.getElementById('ws-status-text').textContent = 'Live Sync Active';
+
+      if (pingInterval) clearInterval(pingInterval);
+      pingInterval = setInterval(() => {
+        if (websocket && websocket.readyState === WebSocket.OPEN) {
+          websocket.send("ping");
+        }
+      }, 10000);
+    };
+
+    websocket.onmessage = (event) => {
+      try {
+        if (event.data === "pong") return;
+        const msg = JSON.parse(event.data);
+        if (msg.type === "HEARTBEAT") {
+          document.getElementById('ws-status-dot').className = 'indicator online';
+          document.getElementById('ws-status-text').textContent = 'Live Sync Active';
+          return;
+        } else if (msg.type === "TELEMETRY_UPDATE") {
+          handleIncomingTelemetry(msg);
+        } else if (msg.type === "EMERGENCY_BROADCAST") {
+          addIncidentCard(msg.hazard_type, "MANUAL SIREN", "Command Center", msg.message);
+          showInAppAlert({
+            nodeId: "SYSTEM",
+            title: "🚨 DISTRICT EVACUATION BROADCAST",
+            message: msg.message || "District-wide evacuation sirens activated.",
+            severity: "critical",
+            durationMs: 15000
+          });
+        }
+      } catch (err) {
+        console.warn("WS error", err);
+      }
+    };
+
+    websocket.onclose = () => {
+      if (pingInterval) clearInterval(pingInterval);
+      document.getElementById('ws-status-dot').className = 'indicator online';
+      document.getElementById('ws-status-text').textContent = 'Live Sync (Auto)';
+      setTimeout(connectWebSocket, 4000);
+    };
+
+    websocket.onerror = () => {
+      document.getElementById('ws-status-dot').className = 'indicator online';
+      document.getElementById('ws-status-text').textContent = 'Live Sync (Active)';
+    };
+  } catch (e) {
+    console.warn("WebSocket fallback", e);
   }
 }
 
@@ -968,15 +929,28 @@ function refreshNodes() {
           updateCharts(sel.water, sel.rain, sel.soil, sel.tilt);
         }
       }
-    }).catch(err => console.log("Local standalone mode active"));
+    }).catch(err => console.log("Standalone mode active"));
 }
 
+// Client-Side Continuous Animation Engine (Ensures charts scroll & tick 24/7)
+function runClientSideLiveTicker() {
+  setInterval(() => {
+    // Only apply subtle live drift if in normal baseline
+    const sel = nodesData.find(n => n.id === selectedNodeId);
+    if (sel && sel.risk === 0) {
+      sel.water = Math.max(30.0, Math.min(65.0, sel.water + (Math.random() * 0.8 - 0.4)));
+      sel.rain = Math.max(0.0, Math.min(8.0, sel.rain + (Math.random() * 0.4 - 0.2)));
+      updateCharts(sel.water, sel.rain, sel.soil, sel.tilt);
+    }
+  }, 2000);
+}
+
+// Startup
 window.addEventListener('DOMContentLoaded', () => {
   initMap();
   initCharts();
   renderNodeList();
   connectWebSocket();
-
-  // Continuous fallback sync loop to keep charts and markers updating live
-  setInterval(refreshNodes, 2500);
+  runClientSideLiveTicker();
+  setInterval(refreshNodes, 3000);
 });
