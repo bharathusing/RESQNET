@@ -31,12 +31,12 @@ let unreadAlertCount = 0;
 let lastAlertTimes = {};
 let audioCtx = null;
 
-// Clean, User-Friendly Sensor Station Database
+// Real-World Disaster Monitoring Stations (Wayanad High-Risk Landslide & Flood Catchment)
 let nodesData = [
-  { id: "RESQ-NODE-01", name: "Riverside Station", type: "RIVER", lat: 13.0850, lon: 80.2750, location: "Lower River Valley (Zone 1)", risk: 0, water: 45.0, rain: 2.0, soil: 35.0, tilt: 0.5, vib: 0.05, batt: 98 },
-  { id: "RESQ-NODE-02", name: "Hillside Station", type: "SLOPE", lat: 13.0920, lon: 80.2680, location: "North Mountain Slope", risk: 0, water: 0.0, rain: 1.5, soil: 40.0, tilt: 1.0, vib: 0.05, batt: 95 },
-  { id: "RESQ-NODE-03", name: "Bridge Station", type: "DUAL", lat: 13.0780, lon: 80.2820, location: "Main Highway Bridge", risk: 0, water: 60.0, rain: 2.5, soil: 45.0, tilt: 0.4, vib: 0.04, batt: 92 },
-  { id: "RESQ-NODE-04", name: "Ridge Tower", type: "REPEATER", lat: 13.0990, lon: 80.2600, location: "Mountain Summit Gateway", risk: 0, water: 0.0, rain: 0.5, soil: 20.0, tilt: 0.2, vib: 0.02, batt: 100 }
+  { id: "RESQ-NODE-01", name: "Chooralmala River Station", type: "RIVER", lat: 11.5450, lon: 76.1280, location: "Chooralmala River Catchment (Wayanad)", risk: 0, water: 45.0, rain: 2.0, soil: 35.0, tilt: 0.5, vib: 0.05, batt: 98 },
+  { id: "RESQ-NODE-02", name: "Mundakkai Mountain Station", type: "SLOPE", lat: 11.5360, lon: 76.1480, location: "Mundakkai Hillside Slope (Wayanad)", risk: 0, water: 0.0, rain: 1.5, soil: 40.0, tilt: 1.0, vib: 0.05, batt: 95 },
+  { id: "RESQ-NODE-03", name: "Attamala Bridge Station", type: "DUAL", lat: 11.5280, lon: 76.1620, location: "Attamala Valley Bridge Checkpoint", risk: 0, water: 60.0, rain: 2.5, soil: 45.0, tilt: 0.4, vib: 0.04, batt: 92 },
+  { id: "RESQ-NODE-04", name: "Chembra Peak Gateway", type: "REPEATER", lat: 11.5120, lon: 76.0880, location: "Chembra Peak Summit (2,100m Altitude)", risk: 0, water: 0.0, rain: 0.5, soil: 20.0, tilt: 0.2, vib: 0.02, batt: 100 }
 ];
 
 // ==========================================================================
@@ -306,8 +306,8 @@ function initMap() {
   });
 
   map = L.map('map-container', {
-    center: [13.0860, 80.2720],
-    zoom: 14,
+    center: [11.5350, 76.1300],
+    zoom: 13,
     layers: [esriDark]
   });
 

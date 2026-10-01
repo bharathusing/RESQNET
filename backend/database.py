@@ -67,18 +67,18 @@ class AlertIncident(Base):
 def init_db():
     Base.metadata.create_all(bind=engine)
     
-    # Pre-populate default nodes if empty
+    # Pre-populate default nodes with real-world disaster monitoring coordinates (Wayanad High-Risk Corridor)
     db = SessionLocal()
     if db.query(SensorNode).count() == 0:
         default_nodes = [
-            SensorNode(id="RESQ-NODE-01", name="Riverside Basin Station", node_type="RIVER_ONLY", 
-                       latitude=13.0850, longitude=80.2750, location_name="Upper Adyar Stream - Zone 1"),
-            SensorNode(id="RESQ-NODE-02", name="Hillside Slope Monitor", node_type="SLOPE_ONLY", 
-                       latitude=13.0920, longitude=80.2680, location_name="North Ridge Escarpment"),
-            SensorNode(id="RESQ-NODE-03", name="Bridge Valley Checkpoint", node_type="DUAL", 
-                       latitude=13.0780, longitude=80.2820, location_name="Main Causeway Bridge"),
-            SensorNode(id="RESQ-NODE-04", name="High Ridge LoRa Gateway", node_type="REPEATER", 
-                       latitude=13.0990, longitude=80.2600, location_name="Ridge Summit Tower")
+            SensorNode(id="RESQ-NODE-01", name="Chooralmala River Station", node_type="RIVER_ONLY", 
+                       latitude=11.5450, longitude=76.1280, location_name="Chooralmala River Catchment"),
+            SensorNode(id="RESQ-NODE-02", name="Mundakkai Mountain Station", node_type="SLOPE_ONLY", 
+                       latitude=11.5360, longitude=76.1480, location_name="Mundakkai Hillside Slope"),
+            SensorNode(id="RESQ-NODE-03", name="Attamala Bridge Station", node_type="DUAL", 
+                       latitude=11.5280, longitude=76.1620, location_name="Attamala Causeway Checkpoint"),
+            SensorNode(id="RESQ-NODE-04", name="Chembra Peak Gateway", node_type="REPEATER", 
+                       latitude=11.5120, longitude=76.0880, location_name="Chembra Peak Summit Tower (2,100m)")
         ]
         db.add_all(default_nodes)
         db.commit()
