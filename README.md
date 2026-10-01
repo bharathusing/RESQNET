@@ -1,55 +1,69 @@
 # 🌊⛰️ RESQNET: Distributed Flood and Landslide Early-Warning Network
 
-[![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/Backend-FastAPI%20%7C%20WebSockets-009688.svg)](https://fastapi.tiangolo.com/)
-[![Leaflet.js](https://img.shields.io/badge/GIS-Leaflet.js%20Zero--API--Key-199900.svg)](https://leafletjs.com/)
-[![Edge AI](https://img.shields.io/badge/AI-On--Device%20Edge%20ML-orange.svg)](https://scikit-learn.org/)
-[![Hardware](https://img.shields.io/badge/Hardware-ESP32%20%7C%20FreeRTOS%20%7C%20LoRa-red.svg)](https://espressif.com/)
+[![Live Render App](https://img.shields.io/badge/Render-Live%20Dashboard-00E599?style=for-the-badge&logo=render&logoColor=white)](https://resqnet-rc9i.onrender.com/dashboard/)
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI%20%7C%20WebSockets-009688.svg?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Leaflet.js](https://img.shields.io/badge/GIS-Leaflet.js%20Zero--API--Key-199900.svg?style=for-the-badge&logo=leaflet&logoColor=white)](https://leafletjs.com/)
+[![Edge AI](https://img.shields.io/badge/AI-On--Device%20Edge%20ML-orange.svg?style=for-the-badge)](https://scikit-learn.org/)
+[![Hardware](https://img.shields.io/badge/Hardware-ESP32%20%7C%20FreeRTOS%20%7C%20LoRa-red.svg?style=for-the-badge&logo=espressif&logoColor=white)](https://espressif.com/)
 
 **Problem Statement ID:** `KH26-ECE-16`  
 **Problem Statement Title:** Distributed Flood and Landslide Early-Warning Network  
 **Theme:** Disaster Management & Public Safety using IoT + AI  
 **Category:** Hardware / Embedded Systems / AIoT | **Team ID:** `41`  
 **Project Name:** **RESQNET** (Resilient Early-Warning Sensor & Quick Notification Network)  
-**GitHub Repository:** [https://github.com/bharathusing/RESQNET](https://github.com/bharathusing/RESQNET)
+**Live Cloud Dashboard:** [https://resqnet-rc9i.onrender.com/dashboard/](https://resqnet-rc9i.onrender.com/dashboard/)  
+**GitHub Repository:** [https://github.com/bharathusing/RESQNET](https://github.com/bharathusing/RESQNET)  
 
 ---
 
 ## 📑 Table of Contents
 1. [Executive Summary & Problem Statement](#1-executive-summary--problem-statement)
-2. [End-to-End System Architecture](#2-end-to-end-system-architecture)
-3. [Key Innovations & Technical Highlights](#3-key-innovations--technical-highlights)
-4. [Control Room Web Dashboard & App Features](#4-control-room-web-dashboard--app-features)
-5. [In-App Real-Time Alert & Audio System](#5-in-app-real-time-alert--audio-system)
-6. [Interactive Simulation Studio & Disaster Injector](#6-interactive-simulation-studio--disaster-injector)
-7. [Repository File & Directory Structure](#7-repository-file--directory-structure)
-8. [Step-by-Step Installation & Local Setup Guide](#8-step-by-step-installation--local-setup-guide)
-9. [Edge AI Model Retraining & C Firmware Export](#9-edge-ai-model-retraining--c-firmware-export)
-10. [Field Hardware Wiring, Pinout & Flashing Guide](#10-field-hardware-wiring-pinout--flashing-guide)
-11. [REST API & WebSocket Documentation](#11-rest-api--websocket-documentation)
-12. [Troubleshooting & Diagnostic Manual](#12-troubleshooting--diagnostic-manual)
-13. [Presentation Pitch Script & Evaluator Defense](#13-presentation-pitch-script--evaluator-defense)
+2. [Real-World Deployment Zone (Wayanad High-Risk Corridor)](#2-real-world-deployment-zone-wayanad-high-risk-corridor)
+3. [End-to-End System Architecture](#3-end-to-end-system-architecture)
+4. [Control Room Web Dashboard & User Experience](#4-control-room-web-dashboard--user-experience)
+5. [Interactive 1-Click Disaster Testing & Simulation](#5-interactive-1-click-disaster-testing--simulation)
+6. [Repository File & Directory Structure](#6-repository-file--directory-structure)
+7. [Step-by-Step Installation & Quickstart Guide](#7-step-by-step-installation--quickstart-guide)
+8. [Edge AI Model Retraining & C Firmware Export](#8-edge-ai-model-retraining--c-firmware-export)
+9. [Field Hardware Wiring, Pinout & Flashing Guide](#9-field-hardware-wiring-pinout--flashing-guide)
+10. [REST API & WebSocket Documentation](#10-rest-api--websocket-documentation)
+11. [Troubleshooting & Diagnostic Manual](#11-troubleshooting--diagnostic-manual)
+12. [Presentation Pitch Script & Evaluator Defense](#12-presentation-pitch-script--evaluator-defense)
 
 ---
 
 ## 1. Executive Summary & Problem Statement
 
 ### 1.1 The Challenge
-In mountainous valleys, river basins, and coastal foothills, torrential cloudbursts trigger two severe, compounding disasters:
-1. **Flash Floods:** River levels surge within minutes, submerging bridges, causeways, and low-lying settlements.
-2. **Rainfall-Induced Landslides:** Prolonged precipitation saturates hillside soils, eliminating shear strength and causing sudden slope collapse and mudslides.
+In mountainous valleys, river catchments, and tropical slopes, heavy monsoonal cloudbursts trigger two severe, compounding disasters:
+1. **Flash Floods:** River depths rise drastically within minutes, submerging bridges, causeways, and downstream settlements.
+2. **Rainfall-Induced Landslides:** Prolonged rainfall saturates hillside soil, eliminating shear strength and causing sudden debris flows and hillside collapse.
 
-### 1.2 Limitations of Legacy Early-Warning Systems
-* **Cloud Latency & Network Vulnerability:** Severe storms frequently knock out cell towers and electrical grids, rendering purely cloud-dependent systems blind.
-* **Single-Parameter False Alarms:** Relying only on river water depth or simple rain gauges leads to frequent false alarms or missed compound disaster signals.
-* **Prohibitive Cost:** Industrial hydrometric stations cost upwards of ₹1,50,000 per unit, making dense geographical deployment impractical for local administrations.
+### 1.2 Limitations of Legacy Systems
+* **Cloud Latency & Cellular Knockout:** Storms routinely destroy mobile towers and power grids, cutting off cloud-dependent warning systems.
+* **Single-Parameter False Alarms:** Relying only on rain gauges or water depth creates false alarms or misses multi-variable soil saturation collapse.
+* **High Deployment Costs:** Legacy industrial stations cost over ₹1,50,000 per unit, making dense valley-wide deployment impossible.
 
 ### 1.3 The RESQNET Solution
-**RESQNET** is an autonomous, decentralized, and edge-intelligent early warning network. Built on low-power **ESP32 field stations**, it fuses multi-modal hydrological and geotechnical sensors, classifies disaster risk in **sub-millisecond time using on-device Edge AI**, communicates over an **off-grid decentralized LoRa Mesh**, and streams telemetry to a **District Control Room GIS Command Center** with real-time in-app hazard popups, audio chimes, and automated SMS/WhatsApp emergency dispatching.
+**RESQNET** is an autonomous, decentralized, and edge-intelligent early-warning network. Built on low-power **ESP32 field stations**, it fuses multi-modal hydrological and geotechnical sensors, classifies disaster risks in **under 1 millisecond using on-device Edge AI**, communicates over an **off-grid decentralized LoRa Mesh**, and streams live telemetry to a **District Control Room GIS Command Center** with real-time hazard status banners, clean notification alerts, and automated multi-channel emergency dispatches.
 
 ---
 
-## 2. End-to-End System Architecture
+## 2. Real-World Deployment Zone (Wayanad High-Risk Corridor)
+
+The sensor network is mapped to the real-world disaster-prone **Wayanad Landslide & Flood Catchment (Kerala, India)**:
+
+| Station ID | Station Name | Geographic Coordinates | Sensor Array & Operational Focus |
+| :--- | :--- | :--- | :--- |
+| **`RESQ-NODE-01`** | **Chooralmala River Station** | `11.5450° N, 76.1280° E` | Ultrasonic water level, tipping rain gauge (River surge monitoring) |
+| **`RESQ-NODE-02`** | **Mundakkai Mountain Station** | `11.5360° N, 76.1480° E` | Capacitive soil moisture, MPU-6050 tilt/vibration (Slope stability) |
+| **`RESQ-NODE-03`** | **Attamala Bridge Station** | `11.5280° N, 76.1620° E` | Dual-mode: Ultrasonic clearance, rain, and bank saturation |
+| **`RESQ-NODE-04`** | **Chembra Peak Gateway** | `11.5120° N, 76.0880° E` | High-altitude LoRa mesh repeater & weather telemetry (2,100m summit) |
+
+---
+
+## 3. End-to-End System Architecture
 
 ```text
 ====================================================================================================
@@ -71,20 +85,21 @@ In mountainous valleys, river basins, and coastal foothills, torrential cloudbur
              • Tri-lingual Voice      • Inter-node Sync              │
                                             │                        ▼
                                             │               [Cloud FastAPI Server]
-                                            │               • SQLite / PostgreSQL
+                                            │               • SQLite Persistence
                                             │               • WebSocket Streaming
-                                            │               • Zone Escalation Analytics
+                                            │               • Automated Telemetry
                                             ▼                        │
                                  [Neighbor Field Nodes]              ▼
                                  (Decentralized Cascade)    [Control Room Dashboard]
-                                                            • Live Leaflet GIS Map
-                                                            • Sensor Hydrographs
-                                                            • In-App Popup Toasts
-                                                            • Incident Management
+                                                            • Hero Status Banner
+                                                            • 4 Live KPI Cards
+                                                            • 1-Click Simulation Bar
+                                                            • Dark Leaflet GIS Map
+                                                            • Single Toast Alerts
                                                                      │
                                                                      ▼
                                                             [Authorities & Public]
-                                                            • NDRF & District Ops (DEOC)
+                                                            • NDRF & District DEOC
                                                             • Community SMS Alerts
                                                             • WhatsApp Broadcasts
 ====================================================================================================
@@ -92,125 +107,96 @@ In mountainous valleys, river basins, and coastal foothills, torrential cloudbur
 
 ---
 
-## 3. Key Innovations & Technical Highlights
+## 4. Control Room Web Dashboard & User Experience
 
-* **Multi-Modal Sensor Fusion:** Simultaneously correlates Water Depth ($cm$), Rate of Rise ($cm/min$), 10/30/60-minute Rain Accumulation ($mm$), Soil Moisture Saturation ($\%$), Slope Tilt ($\theta$), and Seismic Vibration Energy ($g$).
-* **Autonomous On-Device Edge AI:** Zero cloud dependency for local hazard detection. The microcontroller makes autonomous safety decisions and sounds sirens in $<1\text{ ms}$ even during complete cellular blackout.
-* **Decentralized LoRa Mesh Resilience:** Multi-hop packet relaying with CRC-16 integrity checks, 3-hop depth, and duplicate packet suppression.
-* **Fail-Safe Defense-in-Depth:** Parallel execution of on-device Machine Learning and deterministic hard-threshold safety rules with cautious-of-the-two arbitration.
-* **False-Alarm Reduction & Hysteresis:** Requires 3 consecutive elevated readings to escalate risk, and enforces a strict 10-minute hysteresis window before de-escalating.
-* **Tri-Lingual Voice Evacuation:** On-board DFPlayer Mini module broadcasts spoken warnings in **Telugu, Hindi, and English**.
-
----
-
-## 4. Control Room Web Dashboard & App Features
-
-Located in [`code/dashboard/`](file:///b:/Adv_Projects/PPT/code/dashboard/):
+Located in [`dashboard/`](file:///b:/Adv_Projects/RESQNET/code/dashboard/):
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────────┐
-│  HEADER: Live Network Status | Notification Bell 🔔 | Audio 🔊 | Sim Studio 🎮  │
+│  HEADER: RESQNET Live Status | WebSocket Sync | Time | Volume Toggle             │
+├──────────────────────────────────────────────────────────────────────────────────┤
+│  HERO STATUS BANNER: "✓ EVERYTHING NORMAL - Valley Conditions Safe" (Green/Red)  │
+├──────────────────────────────────────────────────────────────────────────────────┤
+│  4 KEY METRICS (Live Cards):                                                     │
+│  [ 🌊 River Water Level ]  [ 🌧️ Rainfall Rate ]  [ 💧 Soil Moisture ]  [ ⛰️ Slope ] │
+├──────────────────────────────────────────────────────────────────────────────────┤
+│  1-CLICK DISASTER TESTING:                                                       │
+│  [🌊 Test Flood] [⛰️ Test Landslide] [🌧️ Heavy Rain] [🚨 Both] [☀️ Reset] [▶️ Auto] │
 ├───────────────────┬──────────────────────────────────────────┬───────────────────┤
-│ LEFT PANEL        │ CENTER: Multi-Layer Dark GIS Map         │ RIGHT PANEL       │
-│ • Real-time Node  │ • Live Radar Pulsing Markers (Green/Red) │ • Live Incident   │
-│   Health Roster   │ • 3-Layer Basemap Switcher (Dark/Sat)    │   Audit Log       │
-│ • Live Risk Tags  │ • Floating Glassmorphic Legend           │ • Manual Siren    │
-│   (Normal/Warning)│ • Dynamic Node Selection & Pan           │   Broadcast Modal │
-├───────────────────┴──────────────────────────────────────────┴───────────────────┤
-│ BOTTOM: Real-Time Hydrographs (Water vs Rain Rate | Soil Saturation vs Tilt)     │
-└──────────────────────────────────────────────────────────────────────────────────┘
+│ LEFT PANEL        │ CENTER: Wayanad GIS Map                  │ RIGHT PANEL       │
+│ • Station Roster  │ • Radar Pulsing Pins (Green/Amber/Red)   │ • Live Event Feed │
+│ • Normal/Warning  │ • 3 Basemaps (Dark / Streets / Satellite)│ • Multi-Channel   │
+│ • Battery Levels  │ • Interactive Node Info Popups           │   Dispatch Log    │
+└───────────────────┴──────────────────────────────────────────┴───────────────────┘
 ```
 
-1. **Zero-API-Key Multi-Layer GIS Map:**
-   * High-contrast **Dark Mode Canvas** (Esri World Dark Gray Canvas).
-   * **Street Map** (OpenStreetMap Standard vector layer).
-   * High-resolution **Satellite View** (Esri World Imagery).
-   * Custom HTML/SVG glowing status markers (`L.divIcon`) with expanding CSS `@keyframes` radar pulse shockwaves.
-2. **Real-Time Telemetry Hydrographs:**
-   * **Hydrograph 1:** Live River Water Level ($cm$) paired with Rain Intensity ($mm/hr$).
-   * **Hydrograph 2:** Soil Saturation ($\%$) paired with Geotechnical Slope Tilt ($\theta$).
-3. **Live Incident Feed & Dispatch Log:**
-   * Automated audit feed tracking disaster escalations, SMS/WhatsApp dispatch status, and district evacuation orders.
+### Key UI Features:
+1. **Hero Status Banner:** Instantly shows overall valley condition (`✓ EVERYTHING NORMAL`, `⚠️ FLOOD WARNING`, `🚨 CRITICAL EMERGENCY`).
+2. **4 Key KPI Metric Cards:** Live gauges displaying **River Water Level**, **Rainfall Rate**, **Ground Soil Moisture**, and **Hillside Slope Stability**.
+3. **1-Click Testing Bar:** Directly accessible test buttons on the dashboard for zero-friction disaster demonstrations.
+4. **Interactive GIS Map:** Leaflet.js map centered over the Wayanad valley with glowing radar pulse pins and zero external API key requirements.
+5. **Non-Intrusive Smart Toast System:** Enforces a maximum of **1 single clean popup** at a time in the bottom-right corner with a 4.5-second auto-dismiss progress bar.
 
 ---
 
-## 5. In-App Real-Time Alert & Audio System
+## 5. Interactive 1-Click Disaster Testing & Simulation
 
-### 5.1 Real-Time Floating Popup Toasts
-Whenever an environmental threshold or rate-of-change spike is detected, an interactive floating popup card slides into the top-right corner:
-* **🌊 Rapid Water Level Rise Alert:** Triggers immediately when water rises rapidly ($\ge 15\text{ cm}$ surge) or crosses flood warning lines ($>180\text{ cm}$ or $>280\text{ cm}$). Displays instantaneous depth, delta increase ($\Delta W$), and riverbed clearance advisory.
-* **⛰️ Slope Instability & Shear Alert:** Triggers when slope tilt exceeds $4.0^\circ$ or changes rapidly under saturated ground conditions ($>70\%$ soil moisture).
-* **🌧️ Cloudburst Rainfall Warning:** Triggers when rainfall rate exceeds $45\text{ mm/hr}$.
-* **🚨 Critical Disaster Emergency Popup:** High-visibility pulsing red alert with sound chime when on-device Edge AI classifies a Critical Flash Flood or Landslide.
-* **📍 View on Map Button:** Centers the map directly onto the alerting sensor node and opens its metadata popup with one click.
-* **Countdown Progress Bar:** Shows visual auto-dismiss timer.
+The dashboard contains 1-click disaster testing buttons for instant demonstration:
 
-### 5.2 Synthesized Web Audio API Chimes (No External Audio Files)
-* **Ascending Water Chime:** Gentle melodic tone when water level surge is detected.
-* **Urgent Alarm Chime:** Triple rapid warning tone during Critical events.
-* **`🔊 Sound: ON/OFF` Header Toggle:** Allows operators to mute/unmute audio alerts at any time.
-
-### 5.3 Notification Center & Activity Drawer
-* **Header Notification Bell (`🔔`)** with an animated unread badge counter.
-* Clicking opens a slide-down **Alert Activity Drawer** to review past alerts with timestamps, node details, and one-click map focusing.
+| Test Button | Injected Condition | Observed System Response |
+| :--- | :--- | :--- |
+| **`🌊 Test Flash Flood`** | River surges to $365\text{ cm}$, Rain: $78\text{ mm/h}$ | Hero turns **Red**, River card turns **Critical**, Node-01 marker pulses red, water surge audio alert chimes. |
+| **`⛰️ Test Landslide`** | Soil: $94\%$, Slope Tilt: $26.5^\circ$, Vibration: $2.4g$ | Hero turns **Red**, Slope card turns **Critical**, Node-02 pulses red, slope failure alert sounds. |
+| **`🌧️ Test Heavy Rain`** | Rain: $65\text{ mm/h}$, Soil: $72\%$, Water: $195\text{ cm}$ | Hero turns **Amber ⚠️ WARNING**, Rain card warns of torrential cloudburst. |
+| **`🚨 Test Both Hazards`** | Extreme flood crest ($420\text{ cm}$) + slope shear ($31^\circ$) | Full valley emergency evacuation broadcast triggered. All sirens active. |
+| **`☀️ Reset to Normal`** | Water: $45\text{ cm}$, Rain: $2\text{ mm/h}$, Soil: $35\%$ | All stations return to green baseline immediately. Alarms cleared. |
+| **`▶️ Auto Demo (1 min)`** | 60-second automated disaster progression | Sequences through Baseline $\rightarrow$ Storm $\rightarrow$ Flood $\rightarrow$ Landslide $\rightarrow$ Recovery. |
 
 ---
 
-## 6. Interactive Simulation Studio & Disaster Injector
-
-Click the purple **`🎮 Simulation Studio & Disaster Injector`** button in the dashboard header:
-
-1. **One-Click Disaster Scenario Presets:**
-   * `☀️ Normal Baseline`: Water 40cm, Rain 0mm, Soil 30%.
-   * `🌧️ Heavy Rain (Warning)`: Rain 55mm/h, Soil 75%, Water 190cm.
-   * `🌊 Flash Flood Surge`: Upstream flood cresting at 425cm.
-   * `⛰️ Landslide Shear Failure`: Slope tilt 28.5°, Soil 99%, Vibration 2.85g.
-   * `🚨 Compound Multi-Hazard`: Simultaneous flash flood and hillside collapse.
-2. **Dynamic Manual Sensor Sliders:**
-   * Adjust **Water Depth (0–500 cm)**, **Rainfall Rate (0–150 mm/h)**, **Soil Saturation (0–100%)**, **Slope Tilt (0–45°)**, and **Vibration (0–3.5g)**.
-   * Click **`🚀 Inject Custom Sensor Reading`** to test custom thresholds.
-3. **Automated 1-Minute Live Sequence:**
-   * Click **`▶️ Run 1-Minute Live Disaster Sequence`** to execute a realistic progression (Normal $\rightarrow$ Heavy Storm $\rightarrow$ Flood Surge $\rightarrow$ Landslide $\rightarrow$ Recovery).
-
----
-
-## 7. Repository File & Directory Structure
+## 6. Repository File & Directory Structure
 
 ```text
 RESQNET/
-├── firmware/                           # ESP32 C++ FreeRTOS Edge Firmware
-│   ├── config.h                        # Pinout table, ADC1 safety map, threshold constants
-│   ├── sensors.h / sensors.cpp         # JSN-SR04T, rain gauge interrupt, soil moisture, MPU-6050
-│   ├── preprocess.h / preprocess.cpp   # Sliding-window rainfall, rate-of-rise (dW/dt), soil trend
-│   ├── edge_ai.h / edge_ai.cpp         # Sub-microsecond ML inference & rule-based safety net
-│   ├── model_weights.h                 # Exported C decision tree weights
-│   ├── risk_fsm.h / risk_fsm.cpp       # 3-sample confirmation & 10-minute hysteresis FSM
-│   ├── alerts.h / alerts.cpp           # PWM sirens, RGB LED beacon, tri-lingual DFPlayer voice
-│   ├── lora_mesh.h / lora_mesh.cpp     # 60-byte binary packet protocol, CRC-16, duplicate cache
-│   ├── gsm_cloud.h / gsm_cloud.cpp     # SIM7600 4G LTE AT command driver, MQTT publisher, SMS
-│   ├── storage.h / storage.cpp         # Circular EEPROM/Flash offline logging & resync
-│   ├── power.h / power.cpp             # Battery ADC monitoring & adaptive deep-sleep scheduling
-│   └── resqnet_esp32_node.ino          # Master FreeRTOS dual-core task scheduler
+├── app.py                              # Cloud root WSGI/ASGI entrypoint for Render / Production
+├── render.yaml                         # Render Cloud Deployment Blueprint specification
+├── requirements.txt                    # Production pip dependency manifest
+├── .python-version                     # Python runtime version lock (3.11.9)
+│
+├── backend/                            # FastAPI Server & Automated Alert Engine
+│   ├── main.py                         # FastAPI async app, WebSocket hub & autonomous telemetry
+│   ├── database.py                     # SQLite schema with Wayanad Station Seeds
+│   ├── alert_dispatcher.py             # Multi-channel emergency dispatcher (SMS / WhatsApp / Cooldown)
+│   ├── mqtt_receiver.py                # Paho-MQTT telemetry ingest engine
+│   └── requirements.txt                # Backend dependencies
+│
+├── dashboard/                          # Control Room Web Dashboard (Zero API Key)
+│   ├── index.html                      # Clean user-friendly dashboard with Hero Banner & KPI cards
+│   ├── app.js                          # GIS map, Chart.js hydrographs, WebSocket client & audio
+│   └── styles.css                      # Modern dark theme, radar pulse animations & bottom-right toasts
 │
 ├── edge_ai_model/                      # Machine Learning Training & C Code Export
-│   ├── train_disaster_model.py         # Generates 15k hydro samples, trains model, exports C header
+│   ├── train_disaster_model.py         # Trains Decision Tree on 15,000 samples & exports C header
+│   ├── model_weights.h                 # Exported C decision tree logic
 │   └── requirements.txt                # ML dependencies (scikit-learn, pandas, numpy)
 │
-├── backend/                            # Cloud Server & Emergency Alert Dispatcher
-│   ├── main.py                         # FastAPI async REST API & WebSocket live streaming
-│   ├── database.py                     # SQLite / SQLAlchemy persistence schema
-│   ├── alert_dispatcher.py             # Automated multi-channel dispatch (SMS, WhatsApp, Cooldown)
-│   ├── mqtt_receiver.py                # Paho-MQTT v1/v2 compatible telemetry receiver
-│   └── requirements.txt                # Backend dependencies (fastapi, uvicorn, pydantic, etc.)
-│
-├── dashboard/                          # Control Room Web Dashboard (Zero-API-Key Setup)
-│   ├── index.html                      # Control room UI layout & simulation modal
-│   ├── app.js                          # Leaflet GIS mapping, Chart.js hydrographs, in-app alerts
-│   └── styles.css                      # Deep dark theme (#0b0f19), glowing radar markers, toasts
+├── firmware/                           # ESP32 C++ FreeRTOS Edge Firmware
+│   ├── resqnet_esp32_node.ino          # Master FreeRTOS dual-core task scheduler
+│   ├── config.h                        # Conflict-free pinout table, ADC1 safety map, constants
+│   ├── sensors.h / sensors.cpp         # Ultrasonic, rain interrupt, soil moisture, MPU-6050
+│   ├── preprocess.h / preprocess.cpp   # Sliding-window rainfall, rate-of-rise (dW/dt), trends
+│   ├── edge_ai.h / edge_ai.cpp         # Sub-millisecond ML inference & deterministic safety net
+│   ├── model_weights.h                 # Embedded C Decision Tree weights
+│   ├── risk_fsm.h / risk_fsm.cpp       # 3-sample confirmation & 10-minute hysteresis FSM
+│   ├── alerts.h / alerts.cpp           # PWM sirens, RGB LED beacon, tri-lingual voice driver
+│   ├── lora_mesh.h / lora_mesh.cpp     # 60-byte binary packet protocol, CRC-16, duplicate cache
+│   ├── gsm_cloud.h / gsm_cloud.cpp     # SIM7600 4G LTE AT command driver, MQTT & SMS
+│   ├── storage.h / storage.cpp         # Circular EEPROM offline backup & resync
+│   └── power.h / power.cpp             # ADC battery monitoring & deep-sleep management
 │
 ├── simulator/                          # Multi-Node Digital Twin Simulator
 │   ├── network_simulator.py            # 4-node concurrent disaster progression simulator
-│   ├── capture_screenshots.py          # Headless Chrome automated screenshot generator
+│   ├── capture_screenshots.py          # Automated UI screenshot generator
 │   └── test_scenarios.json             # Pre-configured scenario profiles
 │
 ├── screens/                            # High-Resolution UI Screenshots
@@ -226,88 +212,54 @@ RESQNET/
 
 ---
 
-## 8. Step-by-Step Installation & Local Setup Guide
+## 7. Step-by-Step Installation & Quickstart Guide
 
-### 8.1 Prerequisites
-* **Python 3.9+** ([Download Python](https://www.python.org/downloads/))
-* **Git** ([Download Git](https://git-scm.com/))
-* A modern web browser (Google Chrome, Microsoft Edge, Mozilla Firefox)
+### 7.1 Running Locally (3 Simple Steps)
 
----
+1. **Clone the Repository:**
+   ```bash
+   git clone https://github.com/bharathusing/RESQNET.git
+   cd RESQNET
+   ```
 
-### 8.2 Step 1: Clone the Repository
-```bash
-git clone https://github.com/bharathusing/RESQNET.git
-cd RESQNET
-```
+2. **Install Dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
----
-
-### 8.3 Step 2: Set Up Python Virtual Environment (Recommended)
-```bash
-# Create virtual environment
-python -m venv venv
-
-# Activate on Windows (PowerShell):
-.\venv\Scripts\Activate.ps1
-
-# Activate on Linux / macOS:
-source venv/bin/activate
-```
+3. **Start the Server:**
+   ```bash
+   python app.py
+   ```
+   * Open your browser at: **[http://localhost:8000/dashboard](http://localhost:8000/dashboard)**
 
 ---
 
-### 8.4 Step 3: Install Dependencies
-```bash
-# Install backend requirements
-pip install -r backend/requirements.txt
-
-# Install Edge AI training requirements
-pip install -r edge_ai_model/requirements.txt
-```
+### 7.2 Accessing the Live Cloud Deployment
+* The production version is deployed on Render:  
+  👉 **[https://resqnet-rc9i.onrender.com/dashboard/](https://resqnet-rc9i.onrender.com/dashboard/)**
 
 ---
 
-### 8.5 Step 4: Launch Cloud Backend Server & Dashboard
-```bash
-cd backend
-python main.py
-```
-* The FastAPI server will start on: **`http://127.0.0.1:8000`**
-* Open your browser and navigate to: **[http://localhost:8000/dashboard](http://localhost:8000/dashboard)**
-* You will see the live dark-themed Control Room Command Center with GIS map, hydrographs, and notification center.
+## 8. Edge AI Model Retraining & C Firmware Export
 
----
-
-### 8.6 Step 5: Run Multi-Node Simulator (In a New Terminal)
-Open a **second terminal window** and run:
-```bash
-cd simulator
-python network_simulator.py
-```
-* Telemetry from all 4 virtual nodes will stream into the FastAPI backend and update the dashboard in real time over WebSockets!
-
----
-
-## 9. Edge AI Model Retraining & C Firmware Export
-
-To retrain the Edge AI model or customize disaster threshold weights:
+To retrain the Edge AI model or generate updated decision weights:
 
 ```bash
 cd edge_ai_model
 python train_disaster_model.py
 ```
 
-### What this script does:
-1. Generates 15,000 synthetic hydro-geotechnical samples reflecting realistic monsoonal dynamics.
-2. Trains a high-precision Decision Tree classifier with **100% Critical Recall**.
-3. Exports the trained model as pure, zero-dependency C source code in [`firmware/model_weights.h`](file:///b:/Adv_Projects/PPT/code/firmware/model_weights.h) for sub-microsecond microcontroller execution.
+### Model Characteristics:
+* **Training Dataset:** 15,000 synthetic hydro-geotechnical samples reflecting monsoon storm dynamics.
+* **Accuracy & Safety:** 100% Critical Recall with zero missed disaster conditions.
+* **Execution Footprint:** Zero external runtime dependencies; exported as pure C code in `firmware/model_weights.h` running in $<1\text{ ms}$ on the ESP32.
 
 ---
 
-## 10. Field Hardware Wiring, Pinout & Flashing Guide
+## 9. Field Hardware Wiring, Pinout & Flashing Guide
 
-### 10.1 Conflict-Free ESP32 GPIO Pinout Table
+### 9.1 Conflict-Free ESP32 GPIO Pinout Table
 
 | ESP32 Pin | Connected Hardware | Function / Protocol | Notes & Safety Rules |
 | :--- | :--- | :--- | :--- |
@@ -333,72 +285,62 @@ python train_disaster_model.py
 | **GPIO 2** | DFPlayer Mini Voice | `DFPLAYER_TX` (SoftwareSerial) | Tri-lingual voice broadcasts (Telugu, Hindi, English) |
 
 > [!CAUTION]
-> **ADC2 Restriction:** Never connect analog sensors to ADC2 pins (`GPIO 0, 2, 4, 12-15, 25-27`) when Wi-Fi or radio modules are in use. Soil moisture and battery monitoring are strictly assigned to **ADC1** (`GPIO 34`, `GPIO 36`).
-
-### 10.2 Flashing Instructions (Arduino IDE / PlatformIO)
-1. Open Arduino IDE and install required libraries via Library Manager:
-   * `LoRa` (by Sandeep Mistry)
-   * `Adafruit MPU6050` & `Adafruit Sensor`
-   * `ArduinoJson`
-2. Connect ESP32 via Micro-USB cable.
-3. Open [`firmware/resqnet_esp32_node.ino`](file:///b:/Adv_Projects/PPT/code/firmware/resqnet_esp32_node.ino).
-4. Configure `NODE_ID` and cellular APN in `config.h`.
-5. Select Board: `ESP32 Dev Module`, choose your COM port, and click **Upload**.
+> **ADC2 Restriction:** Never connect analog sensors to ADC2 pins when Wi-Fi or LoRa radios are active. Soil moisture and battery monitoring are strictly assigned to **ADC1** (`GPIO 34`, `GPIO 36`).
 
 ---
 
-## 11. REST API & WebSocket Documentation
+## 10. REST API & WebSocket Documentation
 
-### 11.1 Key REST Endpoints
+### 10.1 Key REST Endpoints
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/api/nodes` | Returns list of all registered sensor nodes and their live status. |
+| `GET` | `/api/nodes` | Returns list of registered Wayanad sensor nodes and their live status. |
 | `GET` | `/api/telemetry/latest` | Returns latest sensor readings for all nodes. |
 | `POST` | `/api/telemetry` | Ingests sensor reading from field hardware, simulator, or MQTT. |
 | `POST` | `/api/broadcast-alert` | Triggers district-wide manual siren broadcast and emergency SMS. |
 | `GET` | `/api/incidents` | Retrieves historical disaster incidents audit log. |
 | `GET` | `/docs` | Interactive Swagger UI API documentation. |
 
-### 11.2 WebSocket Live Stream
-* **URL:** `ws://127.0.0.1:8000/ws/telemetry`
+### 10.2 WebSocket Live Stream
+* **URL:** `ws://127.0.0.1:8000/ws/telemetry` (or `wss://resqnet-rc9i.onrender.com/ws/telemetry`)
 * **Message Types:**
-  * `TELEMETRY_UPDATE`: Broadcasts live sensor values to dashboard every 2 seconds.
-  * `EMERGENCY_BROADCAST`: Broadcasts district-wide evacuation alerts.
+  * `TELEMETRY_UPDATE`: Broadcasts live sensor readings to dashboard.
+  * `EMERGENCY_BROADCAST`: Broadcasts valley evacuation alerts.
+  * `HEARTBEAT`: 20-second keepalive signal.
 
 ---
 
-## 12. Troubleshooting & Diagnostic Manual
+## 11. Troubleshooting & Diagnostic Manual
 
-| Symptom / Error | Root Cause | Solution |
+| Symptom / Issue | Cause | Solution |
 | :--- | :--- | :--- |
-| `Address already in use: 8000` | Port 8000 is occupied by another process | Stop the old process or change port in `backend/main.py`. |
-| `WebSocket: Reconnecting...` | Backend server is offline | Ensure `python main.py` is running in your backend terminal. |
-| `LoRa initialization failed` | Incorrect SPI wiring or missing SX1278 module | Verify SPI pins (`SCK: 14`, `MISO: 12`, `MOSI: 13`, `NSS: 15`, `RST: 33`, `DIO0: 32`). |
-| Ultrasonic reads `-1.0 cm` (Fault) | Echo timeout or sensor unplugged | Check 5V power supply and verify the 1k/2k resistor divider on `GPIO 18`. |
-| MPU-6050 I2C Error | Missing pullup resistors or bad connection | Add $4.7\text{k}\Omega$ pullups on `GPIO 21 (SDA)` and `GPIO 22 (SCL)` to 3.3V. |
+| `Address already in use: 8000` | Port 8000 is occupied | Terminate the occupying process or restart `python app.py`. |
+| `WebSocket: Reconnecting...` | Backend is starting or sleeping | The dashboard automatically polls fallback API until WebSocket reconnects. |
+| `Toasts overlapping buttons` | Multi-node alert burst | The system limits popups to **1 single toast** at a time with 4.5s auto-dismiss. |
+| `Ultrasonic reads -1.0 cm` | Sensor disconnected or out of range | Check 5V power supply and verify the 1k/2k resistor divider on `GPIO 18`. |
 
 ---
 
-## 13. Presentation Pitch Script & Evaluator Defense
+## 12. Presentation Pitch Script & Evaluator Defense
 
-### 🎤 2-Minute Spoken Pitch Script (For Judges / Evaluators)
+### 🎤 2-Minute Spoken Pitch Script (For Judges & Evaluators)
 
 > **"Respected Judges and Evaluators,**
 > 
-> In hilly and river basin regions, sudden cloudbursts cause devastating flash floods and landslides within minutes, often when power and mobile networks are completely knocked out.
+> In mountainous and river basin terrains like Wayanad, cloudbursts trigger severe flash floods and landslides within minutes, often when power and mobile towers are knocked out.
 > 
-> To solve this, we developed **RESQNET** — a distributed, edge-intelligent early-warning network.
+> To solve this, we built **RESQNET** — an autonomous, edge-intelligent disaster early warning network.
 > 
-> Our system combines **multi-modal IoT sensors** (water depth, tipping rainfall, soil saturation, and slope vibration) connected to an **ESP32 microcontroller running on-device Edge AI**. 
+> Our system combines **multi-modal IoT sensors** (water depth, rainfall, soil saturation, and slope vibration) with an **ESP32 microcontroller running on-device Edge AI**.
 > 
-> Rather than sending raw data to the cloud for processing, our on-device AI evaluates disaster risk locally in less than a millisecond. If a critical hazard is detected, it triggers local sirens and broadcasts warning packets across a **decentralized LoRa mesh network** to neighboring villages, ensuring warnings are delivered even during total cellular blackout.
+> Rather than relying on distant cloud servers, our on-device AI classifies disaster hazards locally in **less than 1 millisecond**. If a critical hazard is detected, it sounds local sirens and transmits alert packets across a **decentralized LoRa mesh network**, alerting downstream villages even during a complete cellular blackout.
 > 
-> When connectivity is available, the nodes uplink telemetry to our **District Control Room Web Dashboard**, giving authorities real-time GIS mapping, predictive hydrographs, in-app hazard popup toasts, and automated SMS/WhatsApp alerts for swift evacuation.
+> When connectivity is available, the nodes stream live data to our **District Control Room Web Dashboard**, giving authorities real-time GIS mapping, 4 key live KPI cards, single non-intrusive alerts, and 1-click disaster testing.
 > 
-> We have developed and validated the complete end-to-end software stack — from the embedded C++ firmware and Edge AI model to the FastAPI cloud backend and interactive control room UI.
+> We have developed and tested the entire end-to-end stack — from embedded C++ firmware and Edge AI model export to the FastAPI cloud backend and interactive dashboard.
 > 
-> Thank you! We are excited to demonstrate the live system."**
+> Thank you! We welcome you to test any disaster scenario on the dashboard."
 
 ---
 
