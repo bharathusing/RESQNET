@@ -171,12 +171,48 @@ def process_telemetry_payload(data: dict):
     finally:
         db.close()
 
+async def autonomous_telemetry_generator():
+    """Background continuous telemetry generator to ensure live streaming on Cloud & Render."""
+    import random
+    base_state = {
+        "RESQ-NODE-01": {"water": 45.0, "rain": 2.0, "soil": 35.0, "tilt": 0.5, "vib": 0.05, "risk": 0},
+        "RESQ-NODE-02": {"water": 0.0, "rain": 1.5, "soil": 40.0, "tilt": 1.2, "vib": 0.08, "risk": 0},
+        "RESQ-NODE-03": {"water": 62.0, "rain": 2.5, "soil": 48.0, "tilt": 0.4, "vib": 0.04, "risk": 0},
+        "RESQ-NODE-04": {"water": 0.0, "rain": 0.5, "soil": 22.0, "tilt": 0.2, "vib": 0.02, "risk": 0},
+    }
+    
+    while True:
+        await asyncio.sleep(2.5)
+        for node_id, state in base_state.items():
+            # Apply subtle real-time natural drifting if not in critical state
+            if state["risk"] == 0:
+                state["water"] = max(10.0, min(90.0, state["water"] + random.uniform(-0.8, 0.9)))
+                state["rain"] = max(0.0, min(15.0, state["rain"] + random.uniform(-0.3, 0.4)))
+                state["soil"] = max(20.0, min(55.0, state["soil"] + random.uniform(-0.4, 0.5)))
+                state["tilt"] = max(0.1, min(2.0, state["tilt"] + random.uniform(-0.05, 0.05)))
+                state["vib"] = max(0.01, min(0.12, state["vib"] + random.uniform(-0.01, 0.01)))
+
+            payload = {
+                "node_id": node_id,
+                "water_level_cm": round(state["water"], 1),
+                "rain_intensity_mm_hr": round(state["rain"], 1),
+                "soil_moisture_pct": round(state["soil"], 1),
+                "tilt_angle_deg": round(state["tilt"], 1),
+                "vibration_rms_g": round(state["vib"], 2),
+                "risk": state["risk"],
+                "risk_name": "NORMAL" if state["risk"] == 0 else ("WARNING" if state["risk"] == 1 else "CRITICAL"),
+                "msg": "Autonomous live mesh telemetry sync"
+            }
+            process_telemetry_payload(payload)
+
 # Startup Event
 @app.on_event("startup")
 def on_startup():
     init_db()
     mqtt_client = MQTTTelemetryReceiver(on_telemetry_callback=process_telemetry_payload)
     mqtt_client.start()
+    # Launch continuous telemetry loop
+    asyncio.create_task(autonomous_telemetry_generator())
 
 # REST Endpoints
 @app.get("/api/nodes")

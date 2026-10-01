@@ -788,11 +788,27 @@ function updateSliderLabels() {
 }
 
 function sendTelemetryToServer(payload) {
+  // 1. Immediately apply update locally so UI changes INSTANTLY on client
+  handleIncomingTelemetry({
+    node_id: payload.node_id,
+    data: {
+      water_level_cm: payload.water_level_cm,
+      rain_intensity_mm_hr: payload.rain_intensity_mm_hr,
+      soil_moisture_pct: payload.soil_moisture_pct,
+      tilt_angle_deg: payload.tilt_angle_deg,
+      vibration_rms_g: payload.vibration_rms_g,
+      risk_level: payload.risk,
+      risk_name: payload.risk_name,
+      explanation: payload.msg
+    }
+  });
+
+  // 2. Transmit to server
   fetch(`${API_BASE}/api/telemetry`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
-  }).catch(e => console.log("Local injection", e));
+  }).catch(e => console.log("Cloud sync", e));
 }
 
 function injectScenario(preset) {
@@ -857,15 +873,17 @@ function injectCustomSliderValues() {
 
 function toggleAutoSequence() {
   const btn = document.getElementById('btn-auto-sequence');
+  const btnQuick = document.getElementById('btn-quick-auto');
+
   if (autoSequenceInterval) {
     clearInterval(autoSequenceInterval);
     autoSequenceInterval = null;
-    btn.textContent = "▶️ Run 1-Minute Live Disaster Sequence";
-    btn.style.background = "#10b981";
+    if (btn) { btn.textContent = "▶️ Run 1-Minute Live Disaster Sequence"; btn.style.background = "#10b981"; }
+    if (btnQuick) { btnQuick.textContent = "▶️ Auto Sequence"; btnQuick.style.background = "#10b981"; }
   } else {
     autoSequenceStep = 0;
-    btn.textContent = "⏹️ Stop Disaster Sequence";
-    btn.style.background = "#ef4444";
+    if (btn) { btn.textContent = "⏹️ Stop Disaster Sequence"; btn.style.background = "#ef4444"; }
+    if (btnQuick) { btnQuick.textContent = "⏹️ Stop"; btnQuick.style.background = "#ef4444"; }
     
     autoSequenceInterval = setInterval(() => {
       autoSequenceStep++;
@@ -881,8 +899,8 @@ function toggleAutoSequence() {
         injectScenario("NORMAL");
         clearInterval(autoSequenceInterval);
         autoSequenceInterval = null;
-        btn.textContent = "▶️ Run 1-Minute Live Disaster Sequence";
-        btn.style.background = "#10b981";
+        if (btn) { btn.textContent = "▶️ Run 1-Minute Live Disaster Sequence"; btn.style.background = "#10b981"; }
+        if (btnQuick) { btnQuick.textContent = "▶️ Auto Sequence"; btnQuick.style.background = "#10b981"; }
       }
     }, 2000);
   }
@@ -916,6 +934,11 @@ function refreshNodes() {
         });
         updateMapMarkers();
         renderNodeList();
+
+        const sel = nodesData.find(n => n.id === selectedNodeId);
+        if (sel) {
+          updateCharts(sel.water, sel.rain, sel.soil, sel.tilt);
+        }
       }
     }).catch(err => console.log("Local standalone mode active"));
 }
@@ -925,4 +948,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initCharts();
   renderNodeList();
   connectWebSocket();
+
+  // Continuous fallback sync loop to keep charts and markers updating live
+  setInterval(refreshNodes, 2500);
 });

@@ -362,8 +362,53 @@ input[type=range] {
   position: relative;
 }
 
+/* Quick Simulation Bar */
+.quick-scenario-bar {
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.4rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  z-index: 100;
+}
+
+.quick-bar-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #c4b5fd;
+  margin-right: 0.2rem;
+}
+
+.btn-quick {
+  background: #1e293b;
+  border: 1px solid var(--border-color);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.25rem 0.55rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.btn-quick:hover {
+  transform: scale(1.04);
+}
+
+.btn-quick.preset-flood:hover { background: rgba(6, 182, 212, 0.3); border-color: #06b6d4; }
+.btn-quick.preset-landslide:hover { background: rgba(239, 68, 68, 0.3); border-color: #ef4444; }
+.btn-quick.preset-warning:hover { background: rgba(245, 158, 11, 0.3); border-color: #f59e0b; }
+.btn-quick.preset-dual:hover { background: linear-gradient(135deg, rgba(239, 68, 68, 0.4), rgba(139, 92, 246, 0.4)); border-color: #f43f5e; }
+.btn-quick.preset-normal:hover { background: rgba(16, 185, 129, 0.3); border-color: #10b981; }
+.btn-quick.preset-auto { background: #10b981; color: #000; font-weight: 700; }
+
 #map-container {
-  height: 52%;
+  height: calc(52% - 35px);
   width: 100%;
   position: relative;
 }

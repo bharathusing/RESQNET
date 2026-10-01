@@ -185,7 +185,17 @@
     <!-- Center Panel: Live GIS Map + Real-time Telemetry Hydrographs -->
     <div class="panel">
       <div class="center-content">
-        <!-- Interactive Leaflet Map -->
+        <!-- Interactive Leaflet Map with Quick Simulation Action Bar -->
+        <div class="quick-scenario-bar">
+          <span class="quick-bar-label">⚡ Live Testing Controls:</span>
+          <button class="btn-quick preset-flood" onclick="injectScenario('CRITICAL_FLOOD')">🌊 Flash Flood</button>
+          <button class="btn-quick preset-landslide" onclick="injectScenario('CRITICAL_LANDSLIDE')">⛰️ Landslide</button>
+          <button class="btn-quick preset-warning" onclick="injectScenario('WARNING')">🌧️ Heavy Rain</button>
+          <button class="btn-quick preset-dual" onclick="injectScenario('DUAL_DISASTER')">🚨 Dual Disaster</button>
+          <button class="btn-quick preset-normal" onclick="injectScenario('NORMAL')">☀️ Reset Normal</button>
+          <button class="btn-quick preset-auto" id="btn-quick-auto" onclick="toggleAutoSequence()">▶️ Auto Sequence</button>
+        </div>
+
         <div id="map-container">
           <!-- Floating Glassmorphic Map Legend -->
           <div class="map-legend">
