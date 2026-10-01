@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RESQNET | District Disaster Early Warning Control Center</title>
+  <title>RESQNET | Flood & Landslide Early Warning System</title>
   
   <!-- Leaflet CSS for GIS Mapping -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -11,7 +11,7 @@
   <!-- Chart.js for Live Telemetry Charts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
-  <!-- Custom Styles -->
+  <!-- Custom Clean Styles -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -21,143 +21,133 @@
     <div class="brand">
       <div class="logo-badge">RESQNET</div>
       <div class="system-title">
-        <h1>District Flood & Landslide Command Center</h1>
-        <p>Problem ID: KH26-ECE-16 &bull; Team 41 &bull; Autonomous IoT + Edge AI Network</p>
+        <h1>Flood & Landslide Early Warning System</h1>
+        <p>Real-Time District Safety & Disaster Monitoring Network</p>
       </div>
     </div>
 
     <div class="header-stats">
-      <!-- In-App Notification Bell -->
-      <button class="btn-notification-bell" id="btn-notification-bell" onclick="toggleNotificationDrawer()" title="View Alert History">
-        <span class="bell-icon">🔔</span>
+      <!-- Sound Alarm Toggle -->
+      <button class="btn-audio-toggle active" id="btn-audio-toggle" onclick="toggleAudioAlerts()" title="Turn sound alert chimes on or off">
+        <span id="audio-icon">🔊</span> <span id="audio-label">Alert Sound: ON</span>
+      </button>
+
+      <!-- Alert History Drawer Toggle -->
+      <button class="btn-notification-bell" id="btn-notification-bell" onclick="toggleNotificationDrawer()" title="View past alert notifications">
+        <span class="bell-icon">🔔</span> Alerts History
         <span class="notification-badge" id="notification-badge">0</span>
       </button>
 
-      <!-- Audio Alert Toggle -->
-      <button class="btn-audio-toggle active" id="btn-audio-toggle" onclick="toggleAudioAlerts()" title="Toggle Sound Alarms">
-        <span id="audio-icon">🔊</span> <span id="audio-label">Sound: ON</span>
-      </button>
-
-      <!-- Connection Status Badges -->
+      <!-- Live Network Indicator -->
       <div class="stat-pill">
         <div class="indicator online" id="server-status-dot"></div>
-        <span id="server-status-text">Cloud Engine: Live</span>
-      </div>
-      <div class="stat-pill">
-        <div class="indicator online" id="ws-status-dot"></div>
-        <span id="ws-status-text">Live Sync Active</span>
-      </div>
-      <div class="stat-pill">
-        <span>Nodes: <strong id="active-nodes-count" style="color:#38bdf8;">4 / 4 Online</strong></span>
-      </div>
-      <div class="stat-pill">
-        <span>LoRa Mesh: <strong style="color: #10b981;">100% Synced</strong></span>
+        <span id="server-status-text">Network: 4 Stations Active</span>
       </div>
     </div>
   </header>
 
-  <!-- Hero Live Emergency Status & Key Environmental Metrics Banner -->
+  <!-- Big Clear System Status & Live Key Metrics Banner -->
   <div class="hero-status-bar" id="hero-status-bar">
     <div class="hero-main-status">
       <div class="status-indicator-badge normal" id="hero-status-pill">
         <span class="status-dot"></span>
-        <span id="hero-status-text">NORMAL MONITORING ACTIVE &bull; ALL WATERSHEDS SAFE</span>
+        <span id="hero-status-text">🟢 ALL CLEAR: NORMAL & SAFE CONDITIONS</span>
       </div>
-      <div class="hero-status-subtitle" id="hero-status-sub">Continuous Edge AI multi-sensor surveillance active across Upper Adyar & North Ridge.</div>
+      <div class="hero-status-subtitle" id="hero-status-sub">All rivers, streams, and hillside slopes are within safe normal limits.</div>
     </div>
 
-    <!-- 4 Key Environmental KPI Cards -->
+    <!-- 4 Easy-to-Understand Metric Cards -->
     <div class="kpi-grid">
       <div class="kpi-card" id="kpi-water-card">
         <div class="kpi-header">
-          <span>💧 Max River Depth</span>
+          <span>💧 River Water Level</span>
           <span class="kpi-tag safe" id="kpi-water-tag">SAFE</span>
         </div>
-        <div class="kpi-value" id="kpi-water-val">45.2 <small>cm</small></div>
-        <div class="kpi-sub" id="kpi-water-sub">Threshold: Warning at 180 cm</div>
+        <div class="kpi-value" id="kpi-water-val">45 <small>cm</small></div>
+        <div class="kpi-sub" id="kpi-water-sub">Safe level (Warning at 180 cm)</div>
       </div>
 
       <div class="kpi-card" id="kpi-rain-card">
         <div class="kpi-header">
-          <span>🌧️ Rain Intensity</span>
+          <span>🌧️ Current Rainfall</span>
           <span class="kpi-tag safe" id="kpi-rain-tag">LIGHT</span>
         </div>
-        <div class="kpi-value" id="kpi-rain-val">2.1 <small>mm/h</small></div>
-        <div class="kpi-sub" id="kpi-rain-sub">1-Hour Accumulation: 3.2 mm</div>
+        <div class="kpi-value" id="kpi-rain-val">2 <small>mm/hr</small></div>
+        <div class="kpi-sub" id="kpi-rain-sub">Light rain falling in valley</div>
       </div>
 
       <div class="kpi-card" id="kpi-soil-card">
         <div class="kpi-header">
-          <span>🌱 Soil Saturation</span>
-          <span class="kpi-tag safe" id="kpi-soil-tag">STABLE</span>
+          <span>🌱 Ground Moisture</span>
+          <span class="kpi-tag safe" id="kpi-soil-tag">NORMAL</span>
         </div>
-        <div class="kpi-value" id="kpi-soil-val">35.0 <small>%</small></div>
-        <div class="kpi-sub" id="kpi-soil-sub">Pore Water Pressure: Normal</div>
+        <div class="kpi-value" id="kpi-soil-val">35 <small>%</small></div>
+        <div class="kpi-sub" id="kpi-soil-sub">Ground is firm and stable</div>
       </div>
 
       <div class="kpi-card" id="kpi-tilt-card">
         <div class="kpi-header">
-          <span>📐 Slope Tilt & Vib</span>
+          <span>⛰️ Hillside Stability</span>
           <span class="kpi-tag safe" id="kpi-tilt-tag">STABLE</span>
         </div>
-        <div class="kpi-value" id="kpi-tilt-val">0.5 <small>° &bull; 0.05g</small></div>
-        <div class="kpi-sub" id="kpi-tilt-sub">Hillside Displacement: None</div>
+        <div class="kpi-value" id="kpi-tilt-val">0.5° <small>Stable</small></div>
+        <div class="kpi-sub" id="kpi-tilt-sub">No slope movement detected</div>
       </div>
     </div>
   </div>
 
-  <!-- Interactive 1-Click Simulation Control Bar -->
+  <!-- Quick Disaster Testing Controls (Easy 1-Click Buttons) -->
   <div class="simulation-banner">
     <div class="sim-banner-title">
-      <span>🎮 <strong>Live Disaster Simulator & Scenario Tester:</strong></span>
-      <small>Click any button below to instantly trigger emergency conditions, test alarms, and watch the system respond:</small>
+      <span>🧪 <strong>Test Disaster Scenarios:</strong></span>
+      <small>Click any button to test how the system reacts during an emergency:</small>
     </div>
     <div class="sim-actions-grid">
-      <button class="sim-action-btn btn-flood" onclick="injectScenario('CRITICAL_FLOOD')">
+      <button class="sim-action-btn btn-flood" onclick="injectScenario('CRITICAL_FLOOD')" title="Simulate dangerous river flood">
         <span class="btn-icon">🌊</span>
         <div class="btn-text">
-          <strong>Flash Flood Surge</strong>
-          <small>Spike river to 430 cm</small>
+          <strong>Test Flash Flood</strong>
+          <small>Water rises to 430 cm</small>
         </div>
       </button>
 
-      <button class="sim-action-btn btn-landslide" onclick="injectScenario('CRITICAL_LANDSLIDE')">
+      <button class="sim-action-btn btn-landslide" onclick="injectScenario('CRITICAL_LANDSLIDE')" title="Simulate hillside collapse">
         <span class="btn-icon">⛰️</span>
         <div class="btn-text">
-          <strong>Landslide Collapse</strong>
-          <small>Tilt to 32.5° & Soil 99%</small>
+          <strong>Test Landslide</strong>
+          <small>Hillside slope collapse</small>
         </div>
       </button>
 
-      <button class="sim-action-btn btn-storm" onclick="injectScenario('WARNING')">
+      <button class="sim-action-btn btn-storm" onclick="injectScenario('WARNING')" title="Simulate heavy monsoon downpour">
         <span class="btn-icon">🌧️</span>
         <div class="btn-text">
-          <strong>Heavy Monsoon Storm</strong>
-          <small>Rain 60 mm/h & Warning</small>
+          <strong>Test Heavy Rain</strong>
+          <small>Rain increases to 60 mm/hr</small>
         </div>
       </button>
 
-      <button class="sim-action-btn btn-dual" onclick="injectScenario('DUAL_DISASTER')">
+      <button class="sim-action-btn btn-dual" onclick="injectScenario('DUAL_DISASTER')" title="Simulate flood and landslide together">
         <span class="btn-icon">🚨</span>
         <div class="btn-text">
-          <strong>Compound Hazard</strong>
-          <small>Simultaneous Flood + Slide</small>
+          <strong>Test Both Hazards</strong>
+          <small>Flood + Landslide together</small>
         </div>
       </button>
 
-      <button class="sim-action-btn btn-normal" onclick="injectScenario('NORMAL')">
+      <button class="sim-action-btn btn-normal" onclick="injectScenario('NORMAL')" title="Restore everything back to normal safe conditions">
         <span class="btn-icon">☀️</span>
         <div class="btn-text">
-          <strong>Reset Safe Baseline</strong>
-          <small>Restore Normal Limits</small>
+          <strong>Reset to Normal</strong>
+          <small>Return to safe baseline</small>
         </div>
       </button>
 
-      <button class="sim-action-btn btn-auto" id="btn-auto-demo" onclick="toggleAutoSequence()">
+      <button class="sim-action-btn btn-auto" id="btn-auto-demo" onclick="toggleAutoSequence()" title="Watch a full 1-minute automated disaster simulation">
         <span class="btn-icon">▶️</span>
         <div class="btn-text">
-          <strong id="btn-auto-label">Auto 1-Min Demo</strong>
-          <small>Full Disaster Sequence</small>
+          <strong id="btn-auto-label">Auto Demo (1 min)</strong>
+          <small>Watch full simulation</small>
         </div>
       </button>
     </div>
@@ -166,47 +156,47 @@
   <!-- In-App Floating Toast Alerts Container -->
   <div id="in-app-toast-container" class="toast-container" aria-live="polite"></div>
 
-  <!-- In-App Notification History Drawer -->
+  <!-- Alert History Drawer -->
   <div id="notification-drawer" class="notification-drawer hidden">
     <div class="drawer-header">
       <div style="display:flex; align-items:center; gap:0.5rem;">
         <span>🔔</span>
-        <strong>In-App Alert Activity & Emergency Log</strong>
+        <strong>Recent Alert Notifications</strong>
       </div>
       <div style="display:flex; gap:0.5rem; align-items:center;">
-        <button class="btn-clear-alerts" onclick="clearAlertHistory()">Clear Logs</button>
+        <button class="btn-clear-alerts" onclick="clearAlertHistory()">Clear</button>
         <button class="btn-close" onclick="toggleNotificationDrawer()">✕</button>
       </div>
     </div>
     <div class="drawer-body" id="drawer-alerts-list">
-      <div class="empty-drawer-msg">No alerts triggered yet. System monitoring within normal limits.</div>
+      <div class="empty-drawer-msg">No active alerts. All monitoring stations are safe.</div>
     </div>
   </div>
 
-  <!-- Main 3-Column Command Room Layout -->
+  <!-- Main 3-Column Layout -->
   <div class="main-container">
     
-    <!-- Left Column: Sensor Station Roster -->
+    <!-- Left Column: Sensor Stations List -->
     <div class="panel">
       <div class="panel-header">
-        <span>Field Sensor Stations</span>
-        <button onclick="refreshNodes()" class="btn-refresh" title="Refresh Node Telemetry">↻ Live Sync</button>
+        <span>📡 Monitoring Stations</span>
+        <button onclick="refreshNodes()" class="btn-refresh">↻ Refresh</button>
       </div>
       <div class="node-list" id="node-list-container">
-        <!-- Node cards injected dynamically -->
+        <!-- Injected dynamically -->
       </div>
     </div>
 
-    <!-- Center Column: Live GIS Map + Telemetry Hydrographs -->
+    <!-- Center Column: Live GIS Map + Telemetry Graphs -->
     <div class="panel">
       <div class="center-content">
         <!-- Interactive Leaflet Map -->
         <div id="map-container">
-          <!-- Floating Glassmorphic Map Legend -->
+          <!-- Simple Map Legend -->
           <div class="map-legend">
             <div class="legend-item">
               <div class="legend-swatch normal"></div>
-              <span>Normal (Safe)</span>
+              <span>Safe (Normal)</span>
             </div>
             <div class="legend-item">
               <div class="legend-swatch warning"></div>
@@ -214,7 +204,7 @@
             </div>
             <div class="legend-item">
               <div class="legend-swatch critical"></div>
-              <span>Critical (Evacuate)</span>
+              <span>Danger (Emergency)</span>
             </div>
           </div>
         </div>
@@ -223,10 +213,10 @@
         <div class="telemetry-charts-panel">
           <div class="panel-header" style="border:none; padding:0.4rem 0.5rem 0.2rem 0.5rem;">
             <div>
-              <span id="chart-title" style="color:#38bdf8; font-weight:700;">Real-Time Sensor Telemetry: RESQ-NODE-01</span>
-              <span style="font-size:0.75rem; color:var(--text-secondary); margin-left:0.5rem;">(Live Edge AI Fusion &bull; Sampling: 2s)</span>
+              <span id="chart-title" style="color:#38bdf8; font-weight:700;">Live Sensor History: Riverside Station</span>
+              <span style="font-size:0.75rem; color:var(--text-secondary); margin-left:0.5rem;">(Live updates every 2 seconds)</span>
             </div>
-            <div style="font-size:0.72rem; color:#10b981;">● Continuous Stream Active</div>
+            <div style="font-size:0.74rem; color:#10b981; font-weight:600;">● Live Connected</div>
           </div>
           <div class="charts-grid">
             <div class="chart-box">
@@ -240,24 +230,24 @@
       </div>
     </div>
 
-    <!-- Right Column: Live Disaster Incidents & Action Dispatch -->
+    <!-- Right Column: Alert Feed & Actions -->
     <div class="panel">
       <div class="panel-header">
-        <span>Incident Dispatch Log</span>
-        <span class="risk-tag normal" id="active-alert-badge">0 CRITICAL</span>
+        <span>📋 Live Alerts & Actions</span>
+        <span class="risk-tag normal" id="active-alert-badge">0 ALERTS</span>
       </div>
       
       <div class="incident-feed" id="incident-feed-container">
         <div class="incident-card" style="border-left-color: var(--status-normal);">
           <div class="incident-time">SYSTEM STATUS &bull; ACTIVE</div>
           <strong>Continuous Surveillance Operating</strong>
-          <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.2rem;">All sensor parameters within baseline thresholds. LoRa mesh telemetry synced.</p>
+          <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.2rem;">All monitoring stations are online and reporting safe environmental conditions.</p>
         </div>
       </div>
 
       <div class="action-bar">
         <button class="btn-emergency" onclick="triggerManualEmergencyModal()">
-          <span style="font-size:1.1rem;">🚨</span> Broadcast District Evacuation Siren
+          <span style="font-size:1.1rem;">📢</span> Sound Emergency Siren & Send Alert
         </button>
       </div>
     </div>
