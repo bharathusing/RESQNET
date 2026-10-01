@@ -126,6 +126,9 @@ function toggleAudioAlerts() {
 // ==========================================================================
 // USER-FRIENDLY POPUP ALERTS
 // ==========================================================================
+// Global toast rate limiter
+let lastToastTimestamp = 0;
+
 function showInAppAlert(alertData) {
   const {
     nodeId = "SYSTEM",
@@ -137,8 +140,15 @@ function showInAppAlert(alertData) {
     soil = null,
     tilt = null,
     deltaWater = 0,
-    durationMs = 8000
+    durationMs = 4500
   } = alertData;
+
+  const now = Date.now();
+  // Rate-limit: Skip popup if another toast fired within 3s unless it's a critical emergency
+  if (now - lastToastTimestamp < 3000 && severity !== 'critical') {
+    return;
+  }
+  lastToastTimestamp = now;
 
   playAlertChime(severity);
 
@@ -159,6 +169,9 @@ function showInAppAlert(alertData) {
   const container = document.getElementById('in-app-toast-container');
   if (!container) return;
 
+  // Clear any existing toast immediately so popups NEVER stack or overlap!
+  container.innerHTML = '';
+
   const toast = document.createElement('div');
   toast.className = `toast-card toast-${severity}`;
   toast.id = historyItem.id;
@@ -171,10 +184,10 @@ function showInAppAlert(alertData) {
   let metaHTML = '';
   if (water !== null || rain !== null || soil !== null || tilt !== null) {
     metaHTML = `<div class="toast-meta-grid">`;
-    if (water !== null) metaHTML += `<div class="toast-meta-item">💧 Water Level: <strong>${Math.round(water)} cm${deltaWater > 0 ? ` (+${Math.round(deltaWater)} cm rise)` : ''}</strong></div>`;
-    if (rain !== null && rain > 0) metaHTML += `<div class="toast-meta-item">🌧️ Rain Rate: <strong>${Math.round(rain)} mm/hr</strong></div>`;
-    if (soil !== null) metaHTML += `<div class="toast-meta-item">🌱 Ground Moisture: <strong>${Math.round(soil)}%</strong></div>`;
-    if (tilt !== null && tilt > 1) metaHTML += `<div class="toast-meta-item">⛰️ Slope Angle: <strong>${tilt.toFixed(1)}°</strong></div>`;
+    if (water !== null) metaHTML += `<div class="toast-meta-item">💧 Water: <strong>${Math.round(water)} cm${deltaWater > 0 ? ` (+${Math.round(deltaWater)}cm)` : ''}</strong></div>`;
+    if (rain !== null && rain > 0) metaHTML += `<div class="toast-meta-item">🌧️ Rain: <strong>${Math.round(rain)} mm/h</strong></div>`;
+    if (soil !== null) metaHTML += `<div class="toast-meta-item">🌱 Moisture: <strong>${Math.round(soil)}%</strong></div>`;
+    if (tilt !== null && tilt > 1) metaHTML += `<div class="toast-meta-item">⛰️ Slope: <strong>${tilt.toFixed(1)}°</strong></div>`;
     metaHTML += `</div>`;
   }
 
@@ -192,7 +205,7 @@ function showInAppAlert(alertData) {
     <div class="toast-message">${message}</div>
     ${metaHTML}
     <div class="toast-actions">
-      ${nodeId !== 'SYSTEM' ? `<button class="btn-toast-action" onclick="focusAndDismiss('${nodeId}', '${toast.id}')">📍 Show on Map</button>` : ''}
+      ${nodeId !== 'SYSTEM' ? `<button class="btn-toast-action" onclick="focusAndDismiss('${nodeId}', '${toast.id}')">📍 Show Station</button>` : ''}
       <button class="btn-toast-action" style="color:#94a3b8;" onclick="dismissToast('${toast.id}')">Dismiss</button>
     </div>
     <div class="toast-progress-bar" style="animation-duration: ${durationMs}ms;"></div>
