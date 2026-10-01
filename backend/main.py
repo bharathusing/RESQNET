@@ -287,17 +287,21 @@ def acknowledge_alert(alert_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"status": "acknowledged"}
 
-# WebSocket Endpoint
+# WebSocket Endpoint with Robust Cloud Keep-Alive
 @app.websocket("/ws/telemetry")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            # Keep-alive ping
-            data = await websocket.receive_text()
-            if data == "ping":
-                await websocket.send_text("pong")
-    except WebSocketDisconnect:
+            try:
+                # Wait for client message with 20s timeout
+                data = await asyncio.wait_for(websocket.receive_text(), timeout=20.0)
+                if data == "ping":
+                    await websocket.send_text("pong")
+            except asyncio.TimeoutError:
+                # Send server heartbeat to prevent Render reverse-proxy timeouts
+                await websocket.send_json({"type": "HEARTBEAT", "status": "ALIVE"})
+    except (WebSocketDisconnect, Exception):
         manager.disconnect(websocket)
 
 # Mount Dashboard Static Files
